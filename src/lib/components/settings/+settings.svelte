@@ -18,7 +18,7 @@
 
   const handleUpdate = (key: keyof Record<string, any>, value: any): void => {
     currentSettings[key] = value;
-    currentSettings = { ...currentSettings }; 
+    currentSettings = { ...currentSettings };
   }
 
   const getButtonClass = () => {
