@@ -7,7 +7,7 @@
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import type { TabConfig } from ".";
-    import { goto } from "$app/navigation";
+  import { goto } from "$app/navigation";
 
   export let tabs: TabConfig[];
 

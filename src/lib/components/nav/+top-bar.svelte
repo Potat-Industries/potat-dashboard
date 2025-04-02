@@ -7,10 +7,7 @@
 <nav>
   <div class="left-section">
     <Button variant="ghost">
-      <a href="/">Home</a>
-    </Button>
-    <Button variant="ghost">
-      <a href="/user">User</a>
+      <a href="/">PotatBotat</a>
     </Button>
     <Button variant="ghost">
       <a href="/channel">Channel</a>
@@ -27,7 +24,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: hsl(var(--background));
+    background-color: hsla(var(--background), 0.8); 
     border-bottom: 1px solid hsl(var(--border));
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }

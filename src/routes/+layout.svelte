@@ -9,9 +9,13 @@
 
 <ModeWatcher />
 
-<header>
+<header class="fixed top-0 left-0 w-full">
   <Nav />
 </header>
+
+<div class="pt-16">
+  {@render children()}
+</div>
 
 <footer>
   <Toaster 
@@ -28,5 +32,3 @@
     }}
   />
 </footer>
-
-{@render children()}

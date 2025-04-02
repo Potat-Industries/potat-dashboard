@@ -6,6 +6,7 @@
   :root {
     --idk: 0 0% 100%;
     --background: 0 0% 100%;
+    --bbackground: 255, 255, 255; 
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
@@ -32,6 +33,7 @@
   .dark {
     --idk: 0 0% 100%;
     --background: 224 71.4% 4.1%;
+    --bbackground: 3, 7, 18;
     --foreground: 210 20% 98%;
     --card: 224 71.4% 4.1%;
     --card-foreground: 210 20% 98%;
@@ -62,5 +64,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(
+      rgba(var(--bbackground), 0.9), 
+      rgba(var(--bbackground), 0.9)
+    ), url('/Home.png');
+    background-size: cover;
+    background-position: center;
+    backdrop-filter: blur(8px);
+    background-attachment: fixed;
   }
 }

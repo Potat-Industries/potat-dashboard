@@ -1,11 +1,11 @@
 import type { TabConfig } from "$lib/components/tabs/index"
 import Settings2 from "lucide-svelte/icons/settings-2";
-import Book from "lucide-svelte/icons/book";
 import SquareUser from "lucide-svelte/icons/square-user";
 import Reminders from "./tabs/reminders.svelte";
 import Settings from "./tabs/settings.svelte";
-import UserStats from "./tabs/userStats.svelte";
 import Connections from "./tabs/connections.svelte";
+// import Book from "lucide-svelte/icons/book";
+// import UserStats from "./tabs/userStats.svelte";
 
 export const tabs: TabConfig[] = [
   { 
@@ -14,12 +14,12 @@ export const tabs: TabConfig[] = [
     icon: Settings2,
     component: Settings
   },
-  {
-    id: 'stats',
-    label: 'Stats',
-    icon: Book,
-    component: UserStats
-  },
+  // { todo
+  //   id: 'stats',
+  //   label: 'Stats',
+  //   icon: Book,
+  //   component: UserStats
+  // },
   {
     id: 'reminders',
     label: 'Reminders',

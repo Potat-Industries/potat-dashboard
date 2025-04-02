@@ -4,6 +4,7 @@
   import Lock from "lucide-svelte/icons/lock";
   import Handshake from "lucide-svelte/icons/handshake";
   import SunMoon from "lucide-svelte/icons/sun-moon"
+  import Settings from "lucide-svelte/icons/settings"
   import * as Avatar from "$lib/components/ui/avatar";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -117,6 +118,13 @@
             </DropdownMenu.Item>
           </DropdownMenu.SubContent>
         </DropdownMenu.Sub>
+
+        <DropdownMenu.Separator />
+
+        <DropdownMenu.Item on:click={()=>openPage("user")}>
+          <Settings class="mr-2 h-4 w-4" />
+          <span>Settings</span>
+        </DropdownMenu.Item>
 
         <DropdownMenu.Separator />
 

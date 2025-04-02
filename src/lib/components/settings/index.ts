@@ -44,6 +44,7 @@ export interface Setting {
   value: boolean | string | number | null;
   description: string;
   possibleValues?: string[];
+  defaults?: string[];
   type: SettingTypes;
 }
 
