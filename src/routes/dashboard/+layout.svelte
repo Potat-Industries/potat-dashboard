@@ -1,7 +1,8 @@
 <script lang="ts">
   import Nav from '$lib/components/nav/+top-bar.svelte';
   import { ModeWatcher } from "mode-watcher";
-	import '../app.css';
+  import '/src/app.css';
+
   import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();

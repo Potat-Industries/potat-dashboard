@@ -120,7 +120,7 @@
 </script>
 
 <div class="flex justify-center">
-  <form class="w-full max-w-3xl shadow-lg rounded-lg p-6" style="padding: 0px; padding-left: 20px; padding-right: 20px;">
+  <form class="w-full max-w-3xl shadow-lg rounded-lg" style="padding-left: 20px; padding-right: 20px;">
     <fieldset class="space-y-8 rounded-lg border p-6">
       <legend class="px-2 text-lg font-semibold">Connections</legend>
       {#each conns as platform}
