@@ -13,6 +13,7 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { toast } from "svelte-sonner";
   import { setMode } from "mode-watcher";
+  import { base } from "$app/paths";
 
   // placeholders
   let loggedIn = true;
@@ -67,7 +68,7 @@
   export let openTermsOfService = (): void => openPage("tos");
   export let openPage = (page: string): void => {
     console.log(`Opening ${page}`);
-    window.location.href = `/dashboard/${page}`;
+    window.location.href = `/${base}/${page}`;
   };
 
   let user = {
