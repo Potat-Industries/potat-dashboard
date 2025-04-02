@@ -13,19 +13,21 @@ export default ts.config(
   ...svelte.configs["flat/recommended"],
   {
     languageOptions: {
-	  globals: {
-	    ...globals.browser,
-	    ...globals.node
-	  }
-	}
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+  },
+  {
+    ignores: ["src/lib/components/ui/**"],
   },
   {
     files: ["**/*.svelte"],
-
     languageOptions: {
-	  parserOptions: {
-	    parser: ts.parser
-	  }
-	}
+      parserOptions: {
+        parser: ts.parser,
+      },
+    },
   }
 );

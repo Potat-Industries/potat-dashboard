@@ -3,7 +3,7 @@
   import { channelSettingDefaults } from "./settings";
   import { onMount } from "svelte";
 
-  const loadChannelSettings = async (): Promise<Record<string, any>> => {
+  const loadChannelSettings = async (): Promise<Record<string, unknown>> => {
     // mock api call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -31,7 +31,8 @@
   }
 
   const updateChannelSettings = async (
-    _: Record<string, any>
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    _: Record<string, unknown>
   ): Promise<{ ok: boolean, error: string }> => {
     // mock api call
     await new Promise((resolve) => setTimeout(resolve, 1000));

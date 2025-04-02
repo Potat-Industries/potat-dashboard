@@ -53,7 +53,9 @@
         if (user) {
           description = `Welcome back ${user.login}`;
         }
-      } catch {}
+      } catch {
+        // todo
+      }
     }
 
     toast.success("Logged in", {

@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { userSettingDefaults } from "./settings";
 
-  const loadUserSettings = async (): Promise<Record<string, any>> => {
+  const loadUserSettings = async (): Promise<Record<string, unknown>> => {
     // mock api call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -16,7 +16,8 @@
   }
 
   const updateUserSettings = async (
-    _: Record<string, any>
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    _: Record<string, unknown>
   ): Promise<{ ok: boolean, error: string }> => {
     // mock api call
     await new Promise((resolve) => setTimeout(resolve, 1000));

@@ -6,17 +6,18 @@
   import { toast } from "svelte-sonner";
   import { onMount, tick } from "svelte";
   import type { Setting } from ".";
+  import type { Selected } from "bits-ui";
 
   export let title: string;
   export let defaults: Setting[];
-  export let loadSettings: () => Promise<Record<string, any>>;
-  export let updateSettings: (settings: Record<string, any>) => Promise<{ ok: boolean, error: string }>;
+  export let loadSettings: () => Promise<Record<string, unknown>>;
+  export let updateSettings: (settings: Record<string, unknown>) => Promise<{ ok: boolean, error: string }>;
 
-  let initialSettings: Record<string, any>;
-  let currentSettings: Record<string, any> = {};
+  let initialSettings: Record<string, unknown>;
+  let currentSettings: Record<string, unknown> = {};
   let hasChanges = false;
 
-  const handleUpdate = (key: keyof Record<string, any>, value: any): void => {
+  const handleUpdate = (key: keyof Record<string, unknown>, value: unknown): void => {
     currentSettings[key] = value;
     currentSettings = { ...currentSettings };
   }
@@ -61,7 +62,7 @@
     const defaultSettings = defaults.reduce((acc, setting) => {
       acc[setting.id] = setting.value;
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, unknown>);
     initialSettings = { ...defaultSettings, ...loadedSettings };
     currentSettings = { ...initialSettings };
     console.log("Loaded settings:", currentSettings);
@@ -105,7 +106,7 @@
             {:else if config.type === 'choice' && config.possibleValues}
               <div class="w-full max-w-xs">
                 <Select.Root 
-                  bind:selected={currentSettings[config.id]}
+                  bind:selected={currentSettings[config.id] as Selected<unknown> | undefined}
                   on:onSelectedChange={(e) => handleUpdate(config.id, e.detail.selected)}
                 >
                   <Select.Trigger id={config.id} class="w-full">
