@@ -65,13 +65,6 @@
 
   body {
     @apply bg-background text-foreground;
-    background: linear-gradient(
-      rgba(var(--bbackground), 0.9), 
-      rgba(var(--bbackground), 0.9)
-    ), url('/Home.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
 
 		.bg-image {
 			background: linear-gradient(
