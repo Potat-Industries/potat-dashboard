@@ -62,6 +62,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     background: linear-gradient(
@@ -70,7 +71,6 @@
     ), url('/Home.png');
     background-size: cover;
     background-position: center;
-    backdrop-filter: blur(8px);
     background-attachment: fixed;
   }
 }

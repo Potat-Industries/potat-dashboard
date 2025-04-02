@@ -9,11 +9,11 @@
 
 <ModeWatcher />
 
-<header class="fixed top-0 left-0 w-full">
+<header>
   <Nav />
 </header>
 
-<div class="pt-16">
+<div class="content">
   {@render children()}
 </div>
 
@@ -32,3 +32,23 @@
     }}
   />
 </footer>
+
+<style>
+  .content {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    background: rgba(var(--bbackground), 0.5);
+  }
+</style>
