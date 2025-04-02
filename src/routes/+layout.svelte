@@ -9,6 +9,9 @@
 
 <ModeWatcher />
 
+<div class="bg-image">
+</div>
+
 <header>
   <Nav />
 </header>
