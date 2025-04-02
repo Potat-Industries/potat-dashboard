@@ -7,10 +7,10 @@
 <nav>
   <div class="left-section">
     <Button variant="ghost">
-      <a href="/dashboard/">PotatBotat</a>
+      <a href="/">PotatBotat</a>
     </Button>
     <Button variant="ghost">
-      <a href="/dashboard/channel">Channel</a>
+      <a href="/channel">Channel</a>
     </Button>
   </div>
   <div class="right-section">

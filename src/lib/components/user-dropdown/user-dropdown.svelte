@@ -67,7 +67,7 @@
   export let openTermsOfService = (): void => openPage("tos");
   export let openPage = (page: string): void => {
     console.log(`Opening ${page}`);
-    window.location.href = `/dashboard/${page}`;
+    window.location.href = `/${page}`;
   };
 
   let user = {
