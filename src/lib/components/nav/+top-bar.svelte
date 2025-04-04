@@ -3,30 +3,16 @@
   import Dropdown from "$lib/components/user-dropdown/user-dropdown.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
+  import type { ChannelPartial } from './+page';
 
-  interface ChannelPartial {
-    readonly channel_id: string;
-    readonly username: string;
-  }
-
-  let channels: ChannelPartial[] = [];
+  export let channels: ChannelPartial[] = [];
   let searchQuery = '';
   // let selectedIndex = -1;
-
-  const loadChannels = async (): Promise<ChannelPartial[]> => {
-    return fetch('https://api.potat.app/channels')
-      .then(res => res.json())
-      .then(res => res?.data ?? [] as ChannelPartial[]);
-  };
 
   const selectChannel = (index: number): void => {
     searchQuery = channels[index]?.username;
     // selectedIndex = index;
   }
-
-  onMount(async () => {
-    channels = await loadChannels();
-  });
 
   $: filteredChannels = channels
     .filter(channel => channel.username.startsWith(searchQuery.toLowerCase()))

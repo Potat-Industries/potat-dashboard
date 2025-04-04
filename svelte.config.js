@@ -16,7 +16,7 @@ const config = {
       base: '/dashboard',
 			relative: true,
     },
-	}
+	},
 };
 
 export default config;

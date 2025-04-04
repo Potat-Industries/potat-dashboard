@@ -1,11 +1,10 @@
 <script lang="ts">
   import Nav from '$lib/components/nav/+top-bar.svelte';
   import { ModeWatcher } from "mode-watcher";
+  import { Toaster } from 'svelte-sonner';
   import '/src/app.css';
 
-  import { Toaster } from 'svelte-sonner';
-
-	let { children } = $props();
+	let { data, children } = $props();
 </script>
 
 <ModeWatcher />
@@ -14,7 +13,7 @@
 </div>
 
 <header>
-  <Nav />
+  <Nav channels={data.channels}/>
 </header>
 
 {@render children()}
@@ -40,7 +39,7 @@
     background: linear-gradient(
       rgba(var(--bbackground), 0.9), 
       rgba(var(--bbackground), 0.9)
-    ), url('/Home.png');
+    ), url('/home-low-quality.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
