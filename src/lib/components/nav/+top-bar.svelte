@@ -4,7 +4,7 @@
   import { Input } from "$lib/components/ui/input";
   // TODO: $types?
   import type { ChannelPartial } from "../../../routes/+layout";
-  import { userStore } from "../../../store/userStore";
+  import { userState } from "$lib/store/LocalStorage.svelte"; 
 
   let { channels }: { channels: ChannelPartial[] } = $props();
   
@@ -14,7 +14,6 @@
       .filter(channel => channel.username.startsWith(searchQuery.toLowerCase()))
       .slice(0, 5) ?? []
   );
-  let login: string = $state('');
   // let selectedIndex = $state(-1);
 
   const selectChannel = (channel: string): void => {
@@ -22,12 +21,6 @@
     const path = `/dashboard/channel/${channel}`;
     window.location.href = path;
   }
-
-  userStore.subscribe((value) => {
-    if (value && value.login) {
-      login = value.login;
-    }
-  })
 
   const handleEnterPress = (event: KeyboardEvent) => {
     if (event.key !== 'Enter' || !searchQuery) {
@@ -48,7 +41,7 @@
       <a href="/dashboard/">PotatBotat</a>
     </Button>
     <Button variant="ghost">
-      <a href="/dashboard/channel/{login}">My Channel</a>
+      <a href="/dashboard/channel/{userState.current?.login ?? ''}">My Channel</a>
     </Button>
   </div>
   <div class="search-container">

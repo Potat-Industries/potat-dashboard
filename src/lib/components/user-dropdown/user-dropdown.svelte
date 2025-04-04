@@ -14,10 +14,10 @@
   import { toast } from "svelte-sonner";
   import { setMode } from "mode-watcher";
   import { onMount } from "svelte";
-  import { userStore } from "../../../store/userStore";
+  import { userState } from "$lib/store/LocalStorage.svelte"; 
 
   // placeholders
-  let loggedIn = true;
+  let loggedIn = $state(true);
   let onLogout = (): void => {
     loggedIn = false;
     console.log("Logged out");
@@ -28,16 +28,6 @@
     });
   };
 
-  let login: string;
-  userStore.subscribe((value) => {
-    if (value && value.login) {
-      login = value.login;
-    } else {
-      // TODO: force login?
-      login = '';
-    }
-  })
-
   // const signIn = (): void => {
   //   window.open(
   //     `https://api.potat.industries/login`,
@@ -46,7 +36,7 @@
   //   );
   // };
 
-  export let onLogin = async (): Promise<void> => {
+  let onLogin = async (): Promise<void> => {
     const apiRequest = async (): Promise<boolean> => {
       // 50/50 for now
       return Math.random() > 0.5;
@@ -65,8 +55,10 @@
     console.log("Logging in");
     localStorage.setItem("token", "1234");
     let description = 'Sucessfully logged in';
+
+    
   
-    const userData = localStorage.getItem('userState');
+    const userData = userState.current;
     if (userData && typeof userData === 'string') {
       try {
         const user = JSON.parse(userData);
@@ -84,9 +76,8 @@
       description
     });
   };
-  let openPrivacyPolicy = (): void => openPage("privacy-policy");
-  let openTermsOfService = (): void => openPage("tos");
-  let openPage = (page: string): void => {
+
+  const openPage = (page: string): void => {
     console.log(`Opening ${page}`);
     window.location.href = `/dashboard/${page}`;
   };
@@ -163,20 +154,24 @@
 
         <DropdownMenu.Separator />
 
-        <DropdownMenu.Item on:click={()=>openPage(`user/${login}`)}>
+        <DropdownMenu.Item on:click={()=>openPage(`user/${userState.current?.login ?? ''}`)}>
           <Settings class="mr-2 h-4 w-4" />
           <span>User Settings</span>
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />
 
-        <DropdownMenu.Item on:click={openPrivacyPolicy}>
+        <DropdownMenu.Item on:click={()=>openPage("privacy-policy")}>
           <Lock class="mr-2 h-4 w-4" />
           <span>Privacy Policy</span>
         </DropdownMenu.Item>
-        <DropdownMenu.Item on:click={openTermsOfService}>
+        <DropdownMenu.Item on:click={()=>openPage("tos")}>
           <Handshake class="mr-2 h-4 w-4" />
           <span>Terms of Service</span>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item on:click={()=>openPage("contact")}>
+          <Handshake class="mr-2 h-4 w-4" />
+          <span>Contact</span>
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />
