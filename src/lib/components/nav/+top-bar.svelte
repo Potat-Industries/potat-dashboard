@@ -1,6 +1,36 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Dropdown from "$lib/components/user-dropdown/user-dropdown.svelte";
   import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+
+  interface ChannelPartial {
+    readonly channel_id: string;
+    readonly username: string;
+  }
+
+  let channels: ChannelPartial[] = [];
+  let searchQuery = '';
+  // let selectedIndex = -1;
+
+  const loadChannels = async (): Promise<ChannelPartial[]> => {
+    return fetch('https://api.potat.app/channels')
+      .then(res => res.json())
+      .then(res => res?.data ?? [] as ChannelPartial[]);
+  };
+
+  const selectChannel = (index: number): void => {
+    searchQuery = channels[index]?.username;
+    // selectedIndex = index;
+  }
+
+  onMount(async () => {
+    channels = await loadChannels();
+  });
+
+  $: filteredChannels = channels
+    .filter(channel => channel.username.startsWith(searchQuery.toLowerCase()))
+    .slice(0, 5);
 </script>
 
 <nav>
@@ -11,6 +41,25 @@
     <Button variant="ghost">
       <a href="/dashboard/channel">Channel</a>
     </Button>
+  </div>
+  <div class="search-container">
+    <Input bind:value={searchQuery} placeholder="Search Channels..." maxlength={25} />
+    
+    {#if searchQuery && filteredChannels.length > 0}
+      <ul class="search-results rounded-md">
+        {#each filteredChannels as channel, index (channel.channel_id)}
+          <div>
+            <Button 
+              variant="ghost" 
+              style="width: 100%; justify-content: left;" 
+              on:click={() => selectChannel(index)}
+            >
+            {channel.username}
+            </Button>
+          </div>
+        {/each}
+      </ul>
+    {/if}
   </div>
   <div class="right-section">
     <Dropdown />
@@ -23,18 +72,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: hsla(var(--background), 0.8); 
+    background-color: hsla(var(--background), 0.8);
     border-bottom: 1px solid hsl(var(--border));
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 100;
   }
 
-  .left-section {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .right-section {
+  .left-section, .right-section {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -45,10 +90,29 @@
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s ease;
+  }
 
-    &:hover {
-      color: hsl(var(--primary));
-    }
+  a:hover {
+    color: hsl(var(--primary));
+  }
+
+  .search-container {
+    position: relative;
+    min-width: 200px;
+  }
+
+  .search-results {
+    position: absolute;
+    background: hsla(var(--background));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 210px;
+    width: 100%;
+    margin-top: 10px;
+    
+    overflow-y: auto;
+    z-index: 9999;
+    padding: 0;
   }
 
   @keyframes slideDown {

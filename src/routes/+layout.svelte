@@ -17,9 +17,7 @@
   <Nav />
 </header>
 
-<div class="content">
-  {@render children()}
-</div>
+{@render children()}
 
 <footer>
   <Toaster 
@@ -38,21 +36,29 @@
 </footer>
 
 <style>
-  .content {
-    position: fixed;
-    top: 64px;
-    left: 0;
-    width: 100%;
-    height: calc(100vh - 64px);
-    overflow-y: auto;
+  .bg-image { 
+    background: linear-gradient(
+      rgba(var(--bbackground), 0.9), 
+      rgba(var(--bbackground), 0.9)
+    ), url('/Home.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    height: 100vh;
+
+    /* Add Blur Effect */
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+
+    position: fixed; 
+    width: 100%; 
+    height: 100%; 
+    z-index: -1;
   }
 
-  header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 64px;
+  header { 
+    position: sticky; 
+    top: 0; 
     background: rgba(var(--bbackground), 0.5);
   }
 </style>

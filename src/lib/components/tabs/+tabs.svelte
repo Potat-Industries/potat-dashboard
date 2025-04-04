@@ -11,10 +11,15 @@
 
   export let tabs: TabConfig[];
 
-  let sidebarExpanded = false;
+  let sidebarExpanded: boolean = false;
   let activeTab = tabs[0]?.id || "";
 
-  const toggleSidebar = () => sidebarExpanded = !sidebarExpanded;
+  const toggleSidebar = () => {
+    sidebarExpanded = !sidebarExpanded;
+    if (browser) {
+      localStorage.setItem('sidebarExpanded', JSON.stringify(sidebarExpanded));
+    }
+  };
 
   const isSidebarExpanded = () => sidebarExpanded ? "default" : "icon";
 
@@ -34,23 +39,37 @@
     }
   };
 
+  const checkSidebarWidth = () => {
+    // TODO: dynamically open the sidebar on page width?
+    const savedSidebarState = localStorage.getItem('sidebarExpanded');
+    if (savedSidebarState !== null) {
+      sidebarExpanded = JSON.parse(savedSidebarState);
+    } else {
+      sidebarExpanded = false;
+    }
+  };
+
   onMount(() => {
-    activeTab = tabs[0]?.id
+    activeTab = tabs[0]?.id;
     if (browser) {
-      updateActiveTabFromHash(); 
+      updateActiveTabFromHash();
       window.addEventListener('hashchange', updateActiveTabFromHash);
+      checkSidebarWidth();
+
+      window.addEventListener('resize', checkSidebarWidth);
     }
   });
 
   onDestroy(() => {
     if (browser) {
       window.removeEventListener('hashchange', updateActiveTabFromHash);
+      window.removeEventListener('resize', checkSidebarWidth);
     }
   });
 </script>
 
 <div
-  class="grid h-screen w-full"
+  class="grid w-full"
   class:pl-[53px]={!sidebarExpanded}
   class:pl-[150px]={sidebarExpanded}
 >
