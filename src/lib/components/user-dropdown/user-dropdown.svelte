@@ -66,7 +66,7 @@
     localStorage.setItem("token", "1234");
     let description = 'Sucessfully logged in';
   
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem('userState');
     if (userData && typeof userData === 'string') {
       try {
         const user = JSON.parse(userData);

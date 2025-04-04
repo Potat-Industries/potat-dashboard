@@ -10,7 +10,7 @@
       return;
     }
 
-    const userData = localStorage.getItem('userData');
+    const userData = localStorage.getItem('userState');
     if (userData) {
       return JSON.parse(userData)?.login;
     }

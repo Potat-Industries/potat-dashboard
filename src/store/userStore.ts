@@ -11,21 +11,21 @@ interface User {
 
 let storedUserData: string | null = null;
 if (browser) {
-  storedUserData = localStorage.getItem('userData');
+  storedUserData = localStorage.getItem('userState');
 }
 
 export const userStore = writable<User | null>(storedUserData ? JSON.parse(storedUserData) : null);
 
 userStore.subscribe(($userStore) => {
   if ($userStore && browser) {
-    localStorage.setItem('userData', JSON.stringify($userStore));
+    localStorage.setItem('userState', JSON.stringify($userStore));
   }
 });
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (event) => {
-    if (event.key === 'userData' && browser) {
-      const newData = localStorage.getItem('userData');
+    if (event.key === 'userState' && browser) {
+      const newData = localStorage.getItem('userState');
       if (newData) {
         userStore.set(JSON.parse(newData));
       }
