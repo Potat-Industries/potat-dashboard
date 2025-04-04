@@ -66,6 +66,12 @@
       margin-bottom: 20px;
   }
 
+  a {
+    margin-top: 20px;
+    color: #2196f3;
+    text-decoration: none;
+  }
+
   ul {
       margin-left: 20px;
   }
