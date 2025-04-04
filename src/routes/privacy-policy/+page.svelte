@@ -1,27 +1,66 @@
-<div>
-  <h1>We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defense, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America.</h1>
+<div class="privacy-policy">
+  <h1>Privacy Policy</h1>
 
-  <h1>All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives.</h1>
-  
-  <h1>The House of Representatives shall be composed of Members chosen every second Year by the People of the several States, and the Electors in each State shall have the Qualifications requisite for Electors of the most numerous Branch of the State Legislature.
+  <h2>1. Introduction</h2>
+  <p>This Privacy Policy explains how we collect, use, and protect information in connection with our chatbot services on Twitch, Kick, and Discord. By using our services, you agree to the practices described in this policy.</p>
 
+  <h2>2. Information We Collect</h2>
+  <p>We may collect the following types of data:</p>
+  <ul>
+      <li>Chat logs and command invocations seen by the chatbot.</li>
+      <li>User data, preferences, and settings for customization.</li>
+      <li>Account information provided by Twitch, Kick, and Discord authentication.</li>
+  </ul>
 
-  No Person shall be a Representative who shall not have attained to the Age of twenty five Years, and been seven Years a Citizen of the United States, and who shall not, when elected, be an Inhabitant of that State in which he shall be chosen.
-  
-  Representatives and direct Taxes shall be apportioned among the several States which may be included within this Union, according to their respective Numbers, which shall be determined by adding to the whole Number of free Persons, including those bound to Service for a Term of Years, and excluding Indians not taxed, three fifths of all other Persons. The actual Enumeration shall be made within three Years after the first Meeting of the Congress of the United States, and within every subsequent Term of ten Years, in such Manner as they shall by Law direct. The Number of Representatives shall not exceed one for every thirty Thousand, but each State shall have at Least one Representative; and until such enumeration shall be made, the State of New Hampshire shall be entitled to chuse three, Massachusetts eight, Rhode-Island and Providence Plantations one, Connecticut five, New-York six, New Jersey four, Pennsylvania eight, Delaware one, Maryland six, Virginia ten, North Carolina five, South Carolina five, and Georgia three.
-  
-  
-  When vacancies happen in the Representation from any State, the Executive Authority thereof shall issue Writs of Election to fill such Vacancies.
-  
-  
-  The House of Representatives shall chuse their Speaker and other Officers; and shall have the sole Power of Impeachment.</h1>
+  <h2>3. How We Use Your Information</h2>
+  <p>We use collected data for the following purposes:</p>
+  <ul>
+      <li>Improving chatbot functionality and user experience.</li>
+      <li>Providing personalized responses and features based on your preferences.</li>
+      <li>Ensuring compliance with platform policies and guidelines.</li>
+  </ul>
+
+  <h2>4. Data Retention</h2>
+  <p>We may retain chat logs and user data as necessary for improving the chatbot's performance, troubleshooting issues, and enhancing future interactions. Please note that retained data will not be sold or shared with third parties without your consent, except as required by law.</p>
+
+  <h2>5. Data Security</h2>
+  <p>We take the security of your data seriously and implement industry-standard security measures to protect user data from unauthorized access, alteration, or disclosure. However, no data transmission or storage system is 100% secure, and we cannot guarantee absolute security.</p>
+
+  <h2>6. Third-Party Services</h2>
+  <p>Our chatbot interacts with Twitch, Kick, and Discord. These platforms have their own privacy policies and terms of use, and we encourage users to review them for a better understanding of how their data is handled.</p>
+
+  <h2>7. Your Rights and Choices</h2>
+  <p>Users have the right to request access to their data, request deletion, or review the information stored about them. You can exercise these rights by contacting us at privacy@potat.app.</p>
+
+  <h2>8. Updates to This Policy</h2>
+  <p>We reserve the right to update or modify this Privacy Policy at any time. Any changes will be reflected on this page, and the date of the most recent update will be provided at the top of this policy.</p>
+
+  <h2>9. Contact Information</h2>
+  <p>If you have any questions or concerns regarding this Privacy Policy, please contact us at privacy@potat.app.</p>
 </div>
 
 <style>
   h1 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    max-width: 800px;
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+  }
 
+  h2 {
+      font-size: 1.5em;
+      margin-top: 20px;
+  }
+
+  p {
+      font-size: 1em;
+      margin-bottom: 20px;
+  }
+
+  ul {
+      margin-left: 20px;
+  }
+
+  .privacy-policy {
+      padding: 20px;
   }
 </style>
