@@ -13,6 +13,8 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { toast } from "svelte-sonner";
   import { setMode } from "mode-watcher";
+  import { onMount } from "svelte";
+  import { userStore } from "../../../store/userStore";
 
   // placeholders
   let loggedIn = true;
@@ -26,6 +28,24 @@
     });
   };
 
+  let login: string;
+  userStore.subscribe((value) => {
+    if (value && value.login) {
+      login = value.login;
+    } else {
+      // TODO: force login?
+      login = '';
+    }
+  })
+
+  // const signIn = (): void => {
+  //   window.open(
+  //     `https://api.potat.industries/login`,
+  //     '_blank',
+  //     'width=600,height=400'
+  //   );
+  // };
+
   export let onLogin = async (): Promise<void> => {
     const apiRequest = async (): Promise<boolean> => {
       // 50/50 for now
@@ -37,6 +57,7 @@
         duration: 2000,
         description: "Something went wrong"
       });
+
       return;
     }
 
@@ -70,10 +91,29 @@
     window.location.href = `/dashboard/${page}`;
   };
 
+  // mock
   let user = {
     pfp: "https://cdn.7tv.app/user/01G6HF7Y9R000AE6YXS14X580S/profile-picture/01H6MCAQ7G000EBVZZZ8Y7EDPR/3x.avif",
     login: "RyanPotat",
   };
+
+  const handleMessage = (event: MessageEvent) => {
+    const { id, login, name, stv_id, token, is_channel } = event.data ?? {};
+
+    if (!token) {
+      return;
+    }
+
+    localStorage.setItem('authorization', token);
+    localStorage.setItem(
+      'userState',
+      JSON.stringify({ id, login, name, stv_id, is_channel })
+    );
+  };
+
+  onMount((): void => {
+    window.addEventListener('message', handleMessage);
+  })
 </script>
 
 <div>
@@ -90,7 +130,7 @@
           <Avatar.Root class="h-6 w-6">
             <Avatar.Image src={user.pfp} alt="User avatar" />
             <Avatar.Fallback>
-              <img src=/default-pfp.png alt="Default avatar"/>
+              <img src=/dashboard/default-pfp.png alt="Default avatar"/>
             </Avatar.Fallback>
           </Avatar.Root>
           <span class="leading-none">{user.login}</span>
@@ -123,9 +163,9 @@
 
         <DropdownMenu.Separator />
 
-        <DropdownMenu.Item on:click={()=>openPage("user")}>
+        <DropdownMenu.Item on:click={()=>openPage(`user/${login}`)}>
           <Settings class="mr-2 h-4 w-4" />
-          <span>Settings</span>
+          <span>User Settings</span>
         </DropdownMenu.Item>
 
         <DropdownMenu.Separator />

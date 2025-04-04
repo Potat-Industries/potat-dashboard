@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import Dropdown from "$lib/components/user-dropdown/user-dropdown.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import type { ChannelPartial } from './+page';
+  // TODO: $types?
+  import type { ChannelPartial } from "../../../routes/+layout";
+  import { userStore } from "../../../store/userStore";
 
   export let channels: ChannelPartial[] = [];
   let searchQuery = '';
@@ -13,6 +14,16 @@
     searchQuery = channels[index]?.username;
     // selectedIndex = index;
   }
+
+  let login: string;
+  userStore.subscribe((value) => {
+    if (value && value.login) {
+      login = value.login;
+    } else {
+      // TODO: force login?
+      login = '';
+    }
+  })
 
   $: filteredChannels = channels
     .filter(channel => channel.username.startsWith(searchQuery.toLowerCase()))
@@ -25,7 +36,7 @@
       <a href="/dashboard/">PotatBotat</a>
     </Button>
     <Button variant="ghost">
-      <a href="/dashboard/channel">Channel</a>
+      <a href="/dashboard/channel/{login}">My Channel</a>
     </Button>
   </div>
   <div class="search-container">
