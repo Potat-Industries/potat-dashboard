@@ -18,7 +18,7 @@
 
   // placeholders
   let loggedIn = true;
-  export let onLogout = (): void => {
+  let onLogout = (): void => {
     loggedIn = false;
     console.log("Logged out");
     localStorage.removeItem("token");
@@ -84,9 +84,9 @@
       description
     });
   };
-  export let openPrivacyPolicy = (): void => openPage("privacy-policy");
-  export let openTermsOfService = (): void => openPage("tos");
-  export let openPage = (page: string): void => {
+  let openPrivacyPolicy = (): void => openPage("privacy-policy");
+  let openTermsOfService = (): void => openPage("tos");
+  let openPage = (page: string): void => {
     console.log(`Opening ${page}`);
     window.location.href = `/dashboard/${page}`;
   };

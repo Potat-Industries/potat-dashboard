@@ -2,11 +2,35 @@
   import { Button } from '$lib/components/ui/button';
   import * as Avatar from "$lib/components/ui/avatar";
 
-  export let platform;
-  export let userConnection;
-  export let connect: (platform: string) => void;
-  export let disconnect: (platform: string) => void;
-  export let refresh: (platform: string) => void;
+  let {
+    platform,
+    userConnection,
+    connect = (_: string): void => {
+      console.error('connect function not provided');
+    },
+    disconnect = (_: string): void => {
+      console.error('disconnect function not provided');
+    },
+    refresh = (_: string): void => {
+      console.error('refresh function not provided');
+    }
+  }: {
+    platform: {
+      name: string;
+      icon: string;
+      description: string;
+      automatic?: boolean;
+      disabled?: boolean;
+    };
+    userConnection?: {
+      platform: string;
+      username: string;
+      id: string;
+    } | null;
+    connect?: (platform: string) => void;
+    disconnect?: (platform: string) => void;
+    refresh?: (platform: string) => void;
+  } = $props();
 </script>
 
 <div style="margin-top: 0px; margin-bottom: 30px;">

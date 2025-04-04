@@ -11,7 +11,7 @@
     id: string;
   }
 
-  let userConnections: UserConnection[] = [];
+  let userConnections: UserConnection[] = $state([]);
   
   // let authorizationToken: string | null = localStorage.getItem('authorization');
   // let userState: string | null = localStorage.getItem('userState');
@@ -110,8 +110,6 @@
     }
     return userConnections.find(conn => conn.platform === platform);
   }
-
-  $: userConnections = userConnections;
 
   onMount(async () => {
     const connections = await loadConnections();

@@ -9,10 +9,10 @@
   import type { TabConfig } from ".";
   import { goto } from "$app/navigation";
 
-  export let tabs: TabConfig[];
+  let { tabs }: { tabs: TabConfig[] } = $props();
 
-  let sidebarExpanded: boolean = false;
-  let activeTab = tabs[0]?.id || "";
+  let sidebarExpanded: boolean = $state(false);
+  let activeTab = $state(tabs[0]?.id || "");
 
   const toggleSidebar = () => {
     sidebarExpanded = !sidebarExpanded;
@@ -100,7 +100,9 @@
                 on:click={() => handleTabChange(tab.id)}
                 builders={[builder]}
               >
-                <svelte:component this={tab.icon} class="size-5" />
+                {#key tab.icon}
+                  <tab.icon class="size-5" />
+                {/key}
                 {#if sidebarExpanded}
                   <span class="ml-2">{tab.label}</span>
                 {/if}
@@ -119,7 +121,11 @@
       <Tabs bind:value={activeTab} on:change={(e) => handleTabChange(e.detail.value)}>
         {#each tabs as tab (tab.id)}
           <TabsContent value={tab.id}>
-            <svelte:component this={tab.component} />
+            {#if tab.component}
+              {#key tab.id}
+                <tab.component />
+              {/key}
+            {/if}
           </TabsContent>
         {/each}
       </Tabs>

@@ -8,14 +8,15 @@
   import type { Setting } from ".";
   import type { Selected } from "bits-ui";
 
-  export let title: string;
-  export let defaults: Setting[];
-  export let loadSettings: () => Promise<Record<string, unknown>>;
-  export let updateSettings: (settings: Record<string, unknown>) => Promise<{ ok: boolean, error: string }>;
+  let { title, defaults, loadSettings, updateSettings }: {
+    title: string;
+    defaults: Setting[];
+    loadSettings: () => Promise<Record<string, unknown>>;
+    updateSettings: (settings: Record<string, unknown>) => Promise<{ ok: boolean, error: string }>;
+  } = $props();
 
-  let initialSettings: Record<string, unknown>;
-  let currentSettings: Record<string, unknown> = {};
-  let hasChanges = false;
+  let initialSettings: Record<string, unknown> | null = $state(null);
+  let currentSettings: Record<string, unknown> = $state({});
 
   const handleUpdate = (key: keyof Record<string, unknown>, value: unknown): void => {
     currentSettings[key] = value;
@@ -49,13 +50,7 @@
     hasChanges = false;
   }
 
-  // watch for settings changes
-  $: {
-    if (initialSettings) {
-      hasChanges = JSON.stringify(currentSettings) 
-               !== JSON.stringify(initialSettings);
-    }
-  }
+  let hasChanges = $derived(JSON.stringify(currentSettings) !== JSON.stringify(initialSettings))
 
   onMount(async () => {
     const loadedSettings = await loadSettings();
@@ -137,7 +132,7 @@
                   id={config.id}
                   class="w-full rounded-md border bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary"
                   bind:value={currentSettings[config.id]}
-                  on:input={(e) => handleUpdate(
+                  oninput={(e) => handleUpdate(
                     config.id, 
                     (e.target as HTMLInputElement)?.value
                   )}
@@ -151,7 +146,7 @@
                   id={config.id}
                   class="w-full rounded-md border bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary"
                   bind:value={currentSettings[config.id]}
-                  on:input={(e) => handleUpdate(
+                  oninput={(e) => handleUpdate(
                     config.id, 
                     (e.target as HTMLInputElement)?.value
                   )}

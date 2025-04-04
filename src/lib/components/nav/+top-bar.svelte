@@ -6,28 +6,40 @@
   import type { ChannelPartial } from "../../../routes/+layout";
   import { userStore } from "../../../store/userStore";
 
-  export let channels: ChannelPartial[] = [];
-  let searchQuery = '';
-  // let selectedIndex = -1;
+  let { channels }: { channels: ChannelPartial[] } = $props();
+  
+  let searchQuery: string = $state('');
+  let filteredChannels: ChannelPartial[] = $derived(
+    channels
+      .filter(channel => channel.username.startsWith(searchQuery.toLowerCase()))
+      .slice(0, 5) ?? []
+  );
+  let login: string = $state('');
+  // let selectedIndex = $state(-1);
 
-  const selectChannel = (index: number): void => {
-    searchQuery = channels[index]?.username;
-    // selectedIndex = index;
+  const selectChannel = (channel: string): void => {
+    searchQuery = '';
+    const path = `/dashboard/channel/${channel}`;
+    window.location.href = path;
   }
 
-  let login: string;
   userStore.subscribe((value) => {
     if (value && value.login) {
       login = value.login;
-    } else {
-      // TODO: force login?
-      login = '';
     }
   })
 
-  $: filteredChannels = channels
-    .filter(channel => channel.username.startsWith(searchQuery.toLowerCase()))
-    .slice(0, 5);
+  const handleEnterPress = (event: KeyboardEvent) => {
+    if (event.key !== 'Enter' || !searchQuery) {
+      // do nothing
+      return;
+    }
+    const userLogin = searchQuery;
+    searchQuery = '';
+
+    const path = `/dashboard/channel/${userLogin}`;
+    window.location.href = path;
+  }
 </script>
 
 <nav>
@@ -40,16 +52,21 @@
     </Button>
   </div>
   <div class="search-container">
-    <Input bind:value={searchQuery} placeholder="Search Channels..." maxlength={25} />
+    <Input 
+      bind:value={searchQuery} 
+      placeholder="Search Channels..." 
+      maxlength={25}
+      on:keydown={handleEnterPress}
+    />
     
     {#if searchQuery && filteredChannels.length > 0}
       <ul class="search-results rounded-md">
-        {#each filteredChannels as channel, index (channel.channel_id)}
+        {#each filteredChannels as channel}
           <div>
             <Button 
               variant="ghost" 
               style="width: 100%; justify-content: left;" 
-              on:click={() => selectChannel(index)}
+              on:click={() => selectChannel(channel.username)}
             >
             {channel.username}
             </Button>
