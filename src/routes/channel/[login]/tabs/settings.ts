@@ -18,7 +18,7 @@ export const channelSettingDefaults: Setting[] = [
     id: 'permission',
     value: 'NONE',
     type: 'choice',
-    description: 'The required permission level to use commands in the channel.',
+    description: 'The required minimum permission level to use commands in the channel.',
     possibleValues: [
       'NONE',
       'SUBSCRIBER',
@@ -32,7 +32,7 @@ export const channelSettingDefaults: Setting[] = [
     id: 'online_permission',
     value: 'NONE',
     type: 'choice',
-    description: 'The required permission level to use commands in the channel while it is live.',
+    description: 'The required minimum permission level to use commands in the channel while it is live.',
     possibleValues: [
       'NONE',
       'SUBSCRIBER',
@@ -84,7 +84,7 @@ export const channelSettingDefaults: Setting[] = [
     type: 'choice',
     description: 'The language the bot will use to communicate with users in your channel.',
     possibleValues: langauges,
-    defaults: ['English', 'Portuguese', 'Spanish', 'German'],
+    defaults: ['English', 'Portuguese', 'Spanish', 'German', 'Russian"'],
   },
   {
     id: 'force_language',
