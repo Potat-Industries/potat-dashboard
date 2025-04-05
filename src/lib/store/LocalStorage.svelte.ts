@@ -14,11 +14,18 @@ export const Storage = {
 } as const;
 
 function createLocalStorageStore<T>(key: string, initialValue: T) {
-  const storedValue = typeof localStorage !== 'undefined'
-    ? JSON.parse(localStorage.getItem(key) as string) || initialValue
-    : initialValue;
+	let parsedValue: T | null = null;
+	if (typeof localStorage !== 'undefined') {
+		try {
+			parsedValue = JSON.parse(localStorage.getItem(key) as string) as T;
+		} catch {
+			// fortnite
+		}
+	} else {
+		parsedValue = initialValue;
+	}
 
-  const store = writable(storedValue);
+  const store = writable(parsedValue);
 
   store.subscribe(($store) => {
     if (typeof localStorage !== 'undefined') {

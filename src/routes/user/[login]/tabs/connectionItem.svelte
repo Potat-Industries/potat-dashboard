@@ -2,6 +2,7 @@
   import { Button } from '$lib/components/ui/button';
   import * as Avatar from "$lib/components/ui/avatar";
 
+  /* eslint-disable  @typescript-eslint/no-unused-vars */
   let {
     platform,
     userConnection,

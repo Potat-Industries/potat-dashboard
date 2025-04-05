@@ -1,30 +1,19 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { goto } from "$app/navigation";
-  import { browser } from "$app/environment";
+  import { userState } from "$lib/store/LocalStorage.svelte";
+  import LoginPopup from "$lib/components/login-popup/+login-popup.svelte";
 
-  const navigate = (path: string) => goto(path);
-
-  const getUserLogin = (): string | undefined => {
-    if (!browser) {
-      return;
-    }
-
-    const userData = localStorage.getItem('userState');
-    if (userData) {
-      return JSON.parse(userData)?.login;
-    }
-  }
+  let openPopup = $state(false);
 
   const tryNaviagte = (path: string) => {
-    const login = getUserLogin();
-    if (!login) {
-      // do something idk?
+    if (!$userState?.login) {
+      openPopup = true;
 
       return;
     }
 
-    navigate(path.replace('{login}', login));
+    goto(path.replace('{login}', $userState.login));
   }
 </script>
 
@@ -43,14 +32,16 @@
     >View My User Settings</Button>
     <Button 
       variant="ghost" 
-      on:click={() => navigate('/dashboard/tos')}
+      on:click={() => goto('/dashboard/tos')}
     >Terms of Service</Button>
     <Button 
       variant="ghost" 
-      on:click={() => navigate('/dashboard/privacy-policy')}
+      on:click={() => goto('/dashboard/privacy-policy')}
     >Privacy Policy</Button>
   </div>
 </div>
+
+<LoginPopup open={openPopup} empty={true} />
 
 <style>
   .container {

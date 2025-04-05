@@ -5,7 +5,6 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { onMount } from "svelte";
   import { Label } from "$lib/components/ui/label/index.js";
-  import { userToken } from "$lib/store/LocalStorage.svelte"; 
 
   type Reminder = {
     reminder_id: number;
@@ -25,8 +24,6 @@
     channel: "",
     dateReady: "",
   };
-
-  userToken;
 
   const loadReminders = async () => {
     isLoading = true;
