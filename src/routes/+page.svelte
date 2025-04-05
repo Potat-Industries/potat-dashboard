@@ -6,7 +6,7 @@
 
   let openPopup = $state(false);
 
-  const tryNaviagte = (path: string) => {
+  const tryGoto = (path: string) => {
     if (!$userState?.login) {
       openPopup = true;
 
@@ -24,15 +24,15 @@
   <div class="button-group">
     <Button 
       variant="ghost" 
-      on:click={() => tryNaviagte('/dashboard/channel/{login}')}
+      on:click={() => tryGoto('/dashboard/channel/{login}')}
     >View My Channel Settings</Button>
     <Button 
       variant="ghost"
-      on:click={() => tryNaviagte('/dashboard/user/{login}')}
+      on:click={() => tryGoto('/dashboard/user/{login}')}
     >View My User Settings</Button>
     <Button 
       variant="ghost" 
-      on:click={() => goto('/dashboard/tos')}
+      on:click={() => goto('/dashboard/terms')}
     >Terms of Service</Button>
     <Button 
       variant="ghost" 

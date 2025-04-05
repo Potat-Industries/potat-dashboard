@@ -99,7 +99,7 @@
           <Lock class="mr-2 h-4 w-4" />
           <span>Privacy Policy</span>
         </DropdownMenu.Item>
-        <DropdownMenu.Item on:click={()=>openPage("tos")}>
+        <DropdownMenu.Item on:click={()=>openPage("terms")}>
           <Handshake class="mr-2 h-4 w-4" />
           <span>Terms of Service</span>
         </DropdownMenu.Item>
