@@ -12,7 +12,7 @@
   }
 
   let userConnections: UserConnection[] = $state([]);
-  
+
   // let authorizationToken: string | null = localStorage.getItem('authorization');
   // let userState: string | null = localStorage.getItem('userState');
 
@@ -25,7 +25,7 @@
     } else {
       window.open(url, '_blank', 'width=600,height=800');
     }
-  }
+  };
 
   // function signOut(): void {
   //   localStorage.clear();
@@ -35,7 +35,7 @@
 
   const connect = async (platform: string): Promise<void> => {
     const prettyPlatform = platform.charAt(0) + platform.slice(1).toLowerCase();
-    
+
     let url: string | undefined;
     try {
       // const res = await fetchBackend(`auth/${platform.toLowerCase()}/authorize`, { auth: true });
@@ -46,19 +46,19 @@
         console.error(error);
         toast.error('Error', {
           duration: 5000,
-          description: `Failed to connect to ${prettyPlatform}: ${error.message}`
-        })
+          description: `Failed to connect to ${prettyPlatform}: ${error.message}`,
+        });
       }
     } finally {
       // stop spinner
     }
-    
+
     if (!url) {
       // signOut();
       return;
     }
     openWindow(url);
-  }
+  };
 
   const disconnect = async (platform: string): Promise<void> => {
     try {
@@ -68,12 +68,12 @@
       userConnections = userConnections.filter(conn => conn.platform !== platform);
       toast.success('Disconnected', {
         duration: 2000,
-        description: `Successfully disconnected from ${platform}`
+        description: `Successfully disconnected from ${platform}`,
       });
     } finally {
       // stop spinner
     }
-  }
+  };
 
   const refresh = async (platform: string): Promise<void> => {
     try {
@@ -82,34 +82,34 @@
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success('Refreshed', {
         duration: 2000,
-        description: `Successfully refreshed ${platform}`
+        description: `Successfully refreshed ${platform}`,
       });
     } finally {
       // stop spinner
     }
-  }
+  };
 
   const loadConnections = async (): Promise<UserConnection[]> => {
-    const connections = await fetch(`https://api.potat.app/users/ryanpotat`, {
+    const connections = await fetch('https://api.potat.app/users/ryanpotat', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     }).then(res => res.json()).then(res=> {
-      console.log(res); return res.data[0]?.user?.connections ?? []
+      console.log(res); return res.data[0]?.user?.connections ?? [];
     });
 
     console.log(connections);
 
     return connections;
-  }
+  };
 
   const findConn = (platform: string): UserConnection | undefined => {
     if (platform === '7TV') {
       platform = 'STV';
     }
     return userConnections.find(conn => conn.platform === platform);
-  }
+  };
 
   onMount(async () => {
     const connections = await loadConnections();
@@ -122,12 +122,12 @@
     <fieldset class="space-y-8 rounded-lg border p-6">
       <legend class="px-2 text-lg font-semibold">Connections</legend>
       {#each conns as platform}
-        <ConnectionItem 
-          {platform} 
-          userConnection={findConn(platform.name.toUpperCase())} 
-          {connect} 
-          {disconnect} 
-          {refresh} 
+        <ConnectionItem
+          {platform}
+          userConnection={findConn(platform.name.toUpperCase())}
+          {connect}
+          {disconnect}
+          {refresh}
         />
       {/each}
     </fieldset>
@@ -137,4 +137,3 @@
 <style>
 
 </style>
-

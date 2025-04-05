@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Label } from "$lib/components/ui/label/index.js";
+  import { Label } from '$lib/components/ui/label/index.js';
   let messagesSent = 120;
   let commandsUsed = 45;
 </script>

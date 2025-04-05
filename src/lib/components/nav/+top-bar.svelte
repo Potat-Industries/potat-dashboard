@@ -1,14 +1,15 @@
 <script lang="ts">
-  import Dropdown from "$lib/components/user-dropdown/user-dropdown.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
+  import Dropdown from '$lib/components/user-dropdown/user-dropdown.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
   // TODO: $types?
-  import type { ChannelPartial } from "../../../routes/+layout";
-  import { userState } from "$lib/store/LocalStorage.svelte"; 
-  import LoginPopup from "../login-popup/+login-popup.svelte";
+  import type { ChannelPartial } from '../../../routes/+layout';
+  import { userState } from '$lib/store/LocalStorage.svelte';
+  import LoginPopup from '../login-popup/+login-popup.svelte';
+  import { goto } from '$app/navigation';
 
   let { channels }: { channels: ChannelPartial[] } = $props();
-  
+
   let searchQuery: string = $state('');
   let filteredChannels: ChannelPartial[] = $derived(
     channels
@@ -21,7 +22,7 @@
     searchQuery = '';
     const path = `/dashboard/channel/${channel}`;
     window.location.href = path;
-  }
+  };
 
   let openPopup = $state(false);
   const handleClickington = (): void => {
@@ -38,9 +39,8 @@
     const userLogin = searchQuery;
     searchQuery = '';
 
-    const path = `/dashboard/channel/${userLogin}`;
-    window.location.href = path;
-  }
+    goto(`/dashboard/channel/${userLogin}`);
+  };
 </script>
 
 <nav>
@@ -50,27 +50,27 @@
     </Button>
     <Button variant="ghost" onclick={handleClickington}>
       {#if $userState?.login}
-        <a href="/dashboard/channel/{$userState?.login ?? ''}">My Channel</a>  
-      {:else} 
+        <a href="/dashboard/channel/{$userState?.login ?? ''}">My Channel</a>
+      {:else}
         My channel
       {/if}
     </Button>
   </div>
   <div class="search-container">
-    <Input 
-      bind:value={searchQuery} 
-      placeholder="Search Channels..." 
+    <Input
+      bind:value={searchQuery}
+      placeholder="Search Channels..."
       maxlength={25}
       on:keydown={handleEnterPress}
     />
-    
+
     {#if searchQuery && filteredChannels.length > 0}
       <ul class="search-results rounded-md">
         {#each filteredChannels as channel}
           <div>
-            <Button 
-              variant="ghost" 
-              style="width: 100%; justify-content: left;" 
+            <Button
+              variant="ghost"
+              style="width: 100%; justify-content: left;"
               on:click={() => selectChannel(channel.username)}
             >
             {channel.username}
@@ -132,7 +132,7 @@
     max-height: 210px;
     width: 100%;
     margin-top: 10px;
-    
+
     overflow-y: auto;
     z-index: 9999;
     padding: 0;

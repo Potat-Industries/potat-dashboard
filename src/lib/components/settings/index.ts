@@ -1,4 +1,4 @@
-import type langauges from "$lib/langauges";
+import type langauges from '$lib/langauges';
 
 export type UserRequires =
 | 'NONE'
@@ -47,4 +47,3 @@ export interface Setting {
   defaults?: string[];
   type: SettingTypes;
 }
-

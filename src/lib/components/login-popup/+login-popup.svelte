@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { userState, userToken } from "$lib/store/LocalStorage.svelte";
+  import { browser } from '$app/environment';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { userState, userToken } from '$lib/store/LocalStorage.svelte';
   import { env } from '$env/dynamic/public';
-  import { onMount } from "svelte";
+  import { onMount } from 'svelte';
 
   let { open = $bindable(), empty = false } = $props();
 
   let onLogin = async (): Promise<void> => {
     window.open(
-      env.PUBLIC_LOGIN_URL ?? `https://api.potat.app/login`,
+      env.PUBLIC_LOGIN_URL ?? 'https://api.potat.app/login',
       '_blank',
       'width=600,height=400'
     );
@@ -18,11 +18,11 @@
     // Mocked example result of postMessage from the window after successful login
     userToken.set('mock-test-token-definitely-real');
     userState.set({
-      id: "457260003",
-      login: "ryanpotat",
-      name: "RyanPotat",
-      stv_id: "01G6HF7Y9R000AE6YXS14X580S",
-      is_channel: false
+      id: '457260003',
+      login: 'ryanpotat',
+      name: 'RyanPotat',
+      stv_id: '01G6HF7Y9R000AE6YXS14X580S',
+      is_channel: false,
     });
 
     open = false;
@@ -41,7 +41,7 @@
       login,
       name,
       stv_id,
-      is_channel
+      is_channel,
     });
   };
 
@@ -49,7 +49,7 @@
     if (browser) {
       window.addEventListener('message', handleMessage);
     }
-  })
+  });
 </script>
 
 <AlertDialog.Root bind:open on:cancel={() => (open = false)}>
@@ -76,8 +76,8 @@
         and
         <a href="/dashboard/terms"> Terms of Service</a>.
       </p>
-    </AlertDialog.Footer>    
-    
+    </AlertDialog.Footer>
+
   </AlertDialog.Content>
 </AlertDialog.Root>
 
@@ -92,5 +92,3 @@
     text-decoration: underline;
   }
 </style>
-
-

@@ -8,5 +8,5 @@ export const load = async ({ fetch }): Promise<{ channels: ChannelPartial[] }> =
     .then(res => res.json())
     .then(res => res?.data ?? [] as ChannelPartial[]);
 
-  return { channels }
+  return { channels };
 };

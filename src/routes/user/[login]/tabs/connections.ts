@@ -51,4 +51,4 @@ export const conns = [
     color: '#6441A4',
     automatic: true,
   },
-]
+];

@@ -132,5 +132,5 @@ export default [
   'Xhosa',
   'Yiddish',
   'Yoruba',
-  'Zulu'
+  'Zulu',
 ];

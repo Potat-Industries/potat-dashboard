@@ -1,31 +1,31 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button/index.js";
-  import LogOut from "lucide-svelte/icons/log-out";
-  import Lock from "lucide-svelte/icons/lock";
-  import Handshake from "lucide-svelte/icons/handshake";
-  import SunMoon from "lucide-svelte/icons/sun-moon"
-  import Settings from "lucide-svelte/icons/settings"
-  import * as Avatar from "$lib/components/ui/avatar";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import Sun from "lucide-svelte/icons/sun";
-  import Moon from "lucide-svelte/icons/moon";
-  import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { toast } from "svelte-sonner";
-  import { setMode } from "mode-watcher";
-  import { userState, userToken } from "$lib/store/LocalStorage.svelte";
-  import LoginPopup from "$lib/components/login-popup/+login-popup.svelte";
-  import { goto } from "$app/navigation";
+  import { Button } from '$lib/components/ui/button/index.js';
+  import LogOut from 'lucide-svelte/icons/log-out';
+  import Lock from 'lucide-svelte/icons/lock';
+  import Handshake from 'lucide-svelte/icons/handshake';
+  import SunMoon from 'lucide-svelte/icons/sun-moon';
+  import Settings from 'lucide-svelte/icons/settings';
+  import * as Avatar from '$lib/components/ui/avatar';
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog';
+  import Sun from 'lucide-svelte/icons/sun';
+  import Moon from 'lucide-svelte/icons/moon';
+  import ChevronDown from 'lucide-svelte/icons/chevron-down';
+  import { toast } from 'svelte-sonner';
+  import { setMode } from 'mode-watcher';
+  import { userState, userToken } from '$lib/store/LocalStorage.svelte';
+  import LoginPopup from '$lib/components/login-popup/+login-popup.svelte';
+  import { goto } from '$app/navigation';
 
   let loggedIn = $derived(!!$userToken);
 
   let onLogout = (): void => {
-    console.log("Logged out");
+    console.log('Logged out');
     userToken.set(null);
     userState.set(null);
-    toast.success("Logged out", {
+    toast.success('Logged out', {
       duration: 2000,
-      description: "You have been successfully logged out"
+      description: 'You have been successfully logged out',
     });
   };
 
@@ -36,20 +36,20 @@
 
   // mock
   let user = {
-    pfp: "https://cdn.7tv.app/user/01G6HF7Y9R000AE6YXS14X580S/profile-picture/01H6MCAQ7G000EBVZZZ8Y7EDPR/3x.avif",
-    login: "RyanPotat",
+    pfp: 'https://cdn.7tv.app/user/01G6HF7Y9R000AE6YXS14X580S/profile-picture/01H6MCAQ7G000EBVZZZ8Y7EDPR/3x.avif',
+    login: 'RyanPotat',
   };
 </script>
 
 <div>
   {#if loggedIn}
     <DropdownMenu.Root closeOnItemClick={false}>
-  
+
       <DropdownMenu.Trigger asChild let:builder>
-        <Button 
-          variant="ghost" 
-          size="default" 
-          class="gap-2" 
+        <Button
+          variant="ghost"
+          size="default"
+          class="gap-2"
           builders={[builder]}
         >
           <Avatar.Root class="h-6 w-6">
@@ -95,15 +95,15 @@
 
         <DropdownMenu.Separator />
 
-        <DropdownMenu.Item on:click={()=>openPage("privacy-policy")}>
+        <DropdownMenu.Item on:click={()=>openPage('privacy-policy')}>
           <Lock class="mr-2 h-4 w-4" />
           <span>Privacy Policy</span>
         </DropdownMenu.Item>
-        <DropdownMenu.Item on:click={()=>openPage("terms")}>
+        <DropdownMenu.Item on:click={()=>openPage('terms')}>
           <Handshake class="mr-2 h-4 w-4" />
           <span>Terms of Service</span>
         </DropdownMenu.Item>
-        <DropdownMenu.Item on:click={()=>openPage("contact")}>
+        <DropdownMenu.Item on:click={()=>openPage('contact')}>
           <Handshake class="mr-2 h-4 w-4" />
           <span>Contact</span>
         </DropdownMenu.Item>
@@ -127,7 +127,7 @@
             </AlertDialog.Content>
           </AlertDialog.Root>
         </DropdownMenu.Item>
-        
+
       </DropdownMenu.Content>
 
     </DropdownMenu.Root>

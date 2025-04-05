@@ -1,18 +1,18 @@
 <script lang="ts">
-  import ArrowRightFromLine from "lucide-svelte/icons/arrow-right-from-line";
-  import ArrowLeftFromLine from "lucide-svelte/icons/arrow-left-from-line";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-  import { Tabs, TabsContent } from "$lib/components/ui/tabs/index.js";
-  import { onMount, onDestroy } from "svelte";
-  import { browser } from "$app/environment";
-  import type { TabConfig } from ".";
-  import { goto } from "$app/navigation";
+  import ArrowRightFromLine from 'lucide-svelte/icons/arrow-right-from-line';
+  import ArrowLeftFromLine from 'lucide-svelte/icons/arrow-left-from-line';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+  import { Tabs, TabsContent } from '$lib/components/ui/tabs/index.js';
+  import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/environment';
+  import type { TabConfig } from '.';
+  import { goto } from '$app/navigation';
 
   let { tabs }: { tabs: TabConfig[] } = $props();
 
   let sidebarExpanded: boolean = $state(false);
-  let activeTab = $state(tabs[0]?.id || "");
+  let activeTab = $state(tabs[0]?.id || '');
 
   const toggleSidebar = () => {
     sidebarExpanded = !sidebarExpanded;
@@ -21,10 +21,10 @@
     }
   };
 
-  const isSidebarExpanded = () => sidebarExpanded ? "default" : "icon";
+  const isSidebarExpanded = () => sidebarExpanded ? 'default' : 'icon';
 
   const isTabActive = (t: string): string => {
-    return activeTab === t ? "bg-muted rounded-lg" : "rounded-lg";
+    return activeTab === t ? 'bg-muted rounded-lg' : 'rounded-lg';
   };
 
   const handleTabChange = (value: string): void => {

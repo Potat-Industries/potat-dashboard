@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
-  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "$lib/components/ui/dialog";
-  import { Input } from "$lib/components/ui/input/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { onMount } from "svelte";
-  import { Label } from "$lib/components/ui/label/index.js";
+  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '$lib/components/ui/table';
+  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '$lib/components/ui/dialog';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import { Button } from '$lib/components/ui/button/index.js';
+  import { onMount } from 'svelte';
+  import { Label } from '$lib/components/ui/label/index.js';
 
   type Reminder = {
     reminder_id: number;
@@ -19,10 +19,10 @@
   let isLoading = false;
 
   let newReminder = {
-    message: "",
-    recipient: "",
-    channel: "",
-    dateReady: "",
+    message: '',
+    recipient: '',
+    channel: '',
+    dateReady: '',
   };
 
   const loadReminders = async () => {
@@ -31,17 +31,17 @@
       let reminders = [
         {
           reminder_id: 1,
-          message: "You were going to gift me a sub, right?",
-          recipient: "elis",
-          channel: "forsen",
+          message: 'You were going to gift me a sub, right?',
+          recipient: 'elis',
+          channel: 'forsen',
           dateSet: new Date().toISOString(),
           dateReady: new Date(Date.now() + 5000000).toISOString(),
         },
         {
           reminder_id: 2,
-          message: "Please stop gambling brother",
-          recipient: "xQc",
-          channel: "xQc",
+          message: 'Please stop gambling brother',
+          recipient: 'xQc',
+          channel: 'xQc',
           dateSet: new Date().toISOString(),
           dateReady: new Date(Date.now() + 500000).toISOString(),
         },
@@ -50,22 +50,22 @@
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       return reminders.sort((a, b) => {
-        return new Date(a.dateReady).getTime() - 
+        return new Date(a.dateReady).getTime() -
           new Date(b.dateReady).getTime();
       });
     } catch (error) {
-      console.error("Failed to load reminders:", error);
+      console.error('Failed to load reminders:', error);
       return [];
     } finally {
       isLoading = false;
     }
-  }
+  };
 
   function deleteReminder(id: number) {
-    const apiCall = () => { return true };
+    const apiCall = () => { return true; };
 
     if (!apiCall()) {
-      console.error("Failed to delete reminder");
+      console.error('Failed to delete reminder');
       // popup error message
       return;
     }

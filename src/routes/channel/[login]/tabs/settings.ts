@@ -1,5 +1,5 @@
-import type { Setting } from "$lib/components/settings";
-import langauges from "$lib/langauges";
+import type { Setting } from '$lib/components/settings';
+import langauges from '$lib/langauges';
 
 export const channelSettingDefaults: Setting[] = [
   {
@@ -84,7 +84,7 @@ export const channelSettingDefaults: Setting[] = [
     type: 'choice',
     description: 'The language the bot will use to communicate with users in your channel.',
     possibleValues: langauges,
-    defaults: ["English", "Portuguese", "Spanish", "German"],
+    defaults: ['English', 'Portuguese', 'Spanish', 'German'],
   },
   {
     id: 'force_language',
@@ -133,5 +133,5 @@ export const channelSettingDefaults: Setting[] = [
     value: false,
     type: 'boolean',
     description: 'If enabled, the bot will not try a fallback whisper to anyone in the channel when a messsage fails to send.',
-  }
+  },
 ];

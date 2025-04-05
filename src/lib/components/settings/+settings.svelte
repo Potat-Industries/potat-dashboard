@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Label from "$lib/components/ui/label/label.svelte";
-  import Switch from "$lib/components/ui/switch/switch.svelte";
-  import * as Select from "$lib/components/ui/select/index.js";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import { toast } from "svelte-sonner";
-  import { onMount, tick } from "svelte";
-  import type { Setting } from ".";
-  import type { Selected } from "bits-ui";
+  import Label from '$lib/components/ui/label/label.svelte';
+  import Switch from '$lib/components/ui/switch/switch.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
+  import Button from '$lib/components/ui/button/button.svelte';
+  import { toast } from 'svelte-sonner';
+  import { onMount, tick } from 'svelte';
+  import type { Setting } from '.';
+  import type { Selected } from 'bits-ui';
 
   let { title, defaults, loadSettings, updateSettings }: {
     title: string;
@@ -21,36 +21,36 @@
   const handleUpdate = (key: keyof Record<string, unknown>, value: unknown): void => {
     currentSettings[key] = value;
     currentSettings = { ...currentSettings };
-  }
+  };
 
   const getButtonClass = () => {
     if (!hasChanges) {
-      return "opacity-50 cursor-not-allowed";
-    } 
-    return "bg-green-600 hover:bg-green-700";
-  }
+      return 'opacity-50 cursor-not-allowed';
+    }
+    return 'bg-green-600 hover:bg-green-700';
+  };
 
   const saveChanges = async () => {
     const { ok, error } = await updateSettings?.(currentSettings) ?? {};
     if (ok) {
-      console.log("Changes saved:", currentSettings);
+      console.log('Changes saved:', currentSettings);
       initialSettings = { ...currentSettings };
-      toast.success("Changes saved", {
+      toast.success('Changes saved', {
         duration: 2000,
-        description: "Your settings have been saved"
+        description: 'Your settings have been saved',
       });
     } else {
-      console.error("Failed to save changes");
+      console.error('Failed to save changes');
       currentSettings = { ...initialSettings };
-      toast.error("Failed to save changes", {
+      toast.error('Failed to save changes', {
         duration: 2000,
-        description: error ?? "Something went wrong"
+        description: error ?? 'Something went wrong',
       });
     }
     hasChanges = false;
-  }
+  };
 
-  let hasChanges = $derived(JSON.stringify(currentSettings) !== JSON.stringify(initialSettings))
+  let hasChanges = $derived(JSON.stringify(currentSettings) !== JSON.stringify(initialSettings));
 
   onMount(async () => {
     const loadedSettings = await loadSettings();
@@ -60,7 +60,7 @@
     }, {} as Record<string, unknown>);
     initialSettings = { ...defaultSettings, ...loadedSettings };
     currentSettings = { ...initialSettings };
-    console.log("Loaded settings:", currentSettings);
+    console.log('Loaded settings:', currentSettings);
 
     await tick();
   });
@@ -70,13 +70,13 @@
   <form class="w-full max-w-3xl" style="padding-left: 20px; padding-right: 20px; ">
     <fieldset class="space-y-8 rounded-lg border p-6" style="box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3)">
       <legend class="px-2 text-lg font-semibold">{title}</legend>
-  
+
       {#if !initialSettings}
         <div class="flex justify-center">
           <span class="loading loading-ring loading-sm"></span>
           <p>Loading...</p>
         </div>
-  
+
       {:else}
         {#each defaults as config (config.id)}
           <div class="space-y-4">
@@ -88,7 +88,7 @@
                 {config.description}
               </p>
             </div>
-  
+
             {#if config.type === 'boolean'}
               <div class="flex justify-start">
                 <Switch
@@ -97,16 +97,16 @@
                   on:click={() => handleUpdate(config.id, !currentSettings[config.id])}
                 />
               </div>
-  
+
             {:else if config.type === 'choice' && config.possibleValues}
               <div class="w-full max-w-xs">
-                <Select.Root 
+                <Select.Root
                   bind:selected={currentSettings[config.id] as Selected<unknown> | undefined}
                   on:onSelectedChange={(e) => handleUpdate(config.id, e.detail.selected)}
                 >
                   <Select.Trigger id={config.id} class="w-full">
                     <Select.Value
-                      placeholder={`Select ${config.id.replace('_', ' ')}`} 
+                      placeholder={`Select ${config.id.replace('_', ' ')}`}
                     />
                   </Select.Trigger>
                   <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
@@ -114,17 +114,17 @@
                       {#each config.defaults as topLang}
                         <Select.Item value={topLang}>{topLang}</Select.Item>
                       {/each}
-                
+
                       <Select.Separator class="border-t my-1" />
                     {/if}
-              
+
                     {#each config.possibleValues as value}
                       <Select.Item value={value}>{value}</Select.Item>
                     {/each}
                   </Select.Content>
                 </Select.Root>
               </div>
-  
+
             {:else if config.type === 'number'}
               <div class="w-full max-w-xs">
                 <input
@@ -133,12 +133,12 @@
                   class="w-full rounded-md border bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary"
                   bind:value={currentSettings[config.id]}
                   oninput={(e) => handleUpdate(
-                    config.id, 
+                    config.id,
                     (e.target as HTMLInputElement)?.value
                   )}
                 />
               </div>
-  
+
             {:else}
               <div class="w-full max-w-xl">
                 <input
@@ -147,7 +147,7 @@
                   class="w-full rounded-md border bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary"
                   bind:value={currentSettings[config.id]}
                   oninput={(e) => handleUpdate(
-                    config.id, 
+                    config.id,
                     (e.target as HTMLInputElement)?.value
                   )}
                 />
@@ -155,21 +155,21 @@
             {/if}
           </div>
         {/each}
-  
+
         <div class="pt-6">
           <Button
             on:click={saveChanges}
             class={getButtonClass()}
             disabled={!hasChanges}
           >Save Changes</Button>
-        </div> 
-  
+        </div>
+
         {#if hasChanges}
           <!-- on page leave warn unsaved changes? -->
         {/if}
-  
+
       {/if}
-      
+
     </fieldset>
   </form>
 </div>

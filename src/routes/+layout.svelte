@@ -1,6 +1,6 @@
 <script lang="ts">
   import Nav from '$lib/components/nav/+top-bar.svelte';
-  import { ModeWatcher } from "mode-watcher";
+  import { ModeWatcher } from 'mode-watcher';
   import { Toaster } from 'svelte-sonner';
   import '/src/app.css';
 
@@ -19,25 +19,25 @@
 {@render children()}
 
 <footer>
-  <Toaster 
+  <Toaster
     theme={'dark'}
     richColors
-    class="[&>div]:font-sans [&>div]:text-base [&>div]:shadow-lg" 
+    class="[&>div]:font-sans [&>div]:text-base [&>div]:shadow-lg"
     toastOptions={{
       classes: {
         toast: 'bg-background text-foreground',
         title: 'text-lg font-semibold',
         description: 'text-muted-foreground',
         closeButton: 'bg-background text-foreground',
-      }
+      },
     }}
   />
 </footer>
 
 <style>
-  .bg-image { 
+  .bg-image {
     background: linear-gradient(
-      rgba(var(--bbackground), 0.9), 
+      rgba(var(--bbackground), 0.9),
       rgba(var(--bbackground), 0.9)
     ), url('/home-low-quality.png');
     background-size: cover;
@@ -49,15 +49,15 @@
     filter: blur(8px);
     -webkit-filter: blur(8px);
 
-    position: fixed; 
-    width: 100%; 
-    height: 100%; 
+    position: fixed;
+    width: 100%;
+    height: 100%;
     z-index: -1;
   }
 
-  header { 
-    position: sticky; 
-    top: 0; 
+  header {
+    position: sticky;
+    top: 0;
     background: rgba(var(--bbackground), 0.5);
   }
 </style>

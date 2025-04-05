@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button';
-  import * as Avatar from "$lib/components/ui/avatar";
+  import * as Avatar from '$lib/components/ui/avatar';
 
   /* eslint-disable  @typescript-eslint/no-unused-vars */
   let {
@@ -14,7 +14,7 @@
     },
     refresh = (_: string): void => {
       console.error('refresh function not provided');
-    }
+    },
   }: {
     platform: {
       name: string;
@@ -47,7 +47,7 @@
         </div>
       {/if}
     </div>
-  
+
     {#if platform.automatic}
     <Button
       style="background-color: #DAA520"

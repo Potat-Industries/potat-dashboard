@@ -1,4 +1,4 @@
-import type { Component, ComponentType } from "svelte";
+import type { Component, ComponentType } from 'svelte';
 
 export interface TabConfig {
   id: string;
