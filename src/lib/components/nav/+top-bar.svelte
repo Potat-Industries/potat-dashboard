@@ -85,7 +85,9 @@
   </div>
 </nav>
 
-<LoginPopup open={openPopup} empty={true} />
+{#if openPopup}
+  <LoginPopup bind:open={openPopup} empty={true} />
+{/if}
 
 <style>
   nav {

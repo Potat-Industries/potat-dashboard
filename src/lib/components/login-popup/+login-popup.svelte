@@ -6,7 +6,7 @@
   import { env } from '$env/dynamic/public';
   import { onMount } from "svelte";
 
-  let { open = false, empty = false } = $props();
+  let { open = $bindable(), empty = false } = $props();
 
   let onLogin = async (): Promise<void> => {
     window.open(
