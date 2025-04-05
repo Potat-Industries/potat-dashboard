@@ -55,7 +55,7 @@
 <AlertDialog.Root bind:open on:cancel={() => (open = false)}>
   <AlertDialog.Trigger>
     {#if !empty}
-      <Button variant="ghost" size="default">
+      <Button variant="outline" size="default">
         Login
       </Button>
     {/if}

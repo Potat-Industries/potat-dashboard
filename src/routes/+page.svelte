@@ -23,19 +23,19 @@
 
   <div class="button-group">
     <Button
-      variant="ghost"
+      variant="outline"
       on:click={() => tryGoto('/dashboard/channel/{login}')}
     >View My Channel Settings</Button>
     <Button
-      variant="ghost"
+      variant="outline"
       on:click={() => tryGoto('/dashboard/user/{login}')}
     >View My User Settings</Button>
     <Button
-      variant="ghost"
+      variant="outline"
       on:click={() => goto('/dashboard/terms')}
     >Terms of Service</Button>
     <Button
-      variant="ghost"
+      variant="outline"
       on:click={() => goto('/dashboard/privacy-policy')}
     >Privacy Policy</Button>
   </div>

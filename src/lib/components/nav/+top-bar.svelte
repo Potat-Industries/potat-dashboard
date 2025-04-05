@@ -45,10 +45,10 @@
 
 <nav>
   <div class="left-section">
-    <Button variant="ghost">
+    <Button variant="outline">
       <a href="/dashboard/">PotatBotat</a>
     </Button>
-    <Button variant="ghost" onclick={handleClickington}>
+    <Button variant="outline" onclick={handleClickington}>
       {#if $userState?.login}
         <a href="/dashboard/channel/{$userState?.login ?? ''}">My Channel</a>
       {:else}
