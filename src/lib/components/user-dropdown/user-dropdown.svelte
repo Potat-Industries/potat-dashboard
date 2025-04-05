@@ -14,72 +14,25 @@
   import { toast } from "svelte-sonner";
   import { setMode } from "mode-watcher";
   import { onMount } from "svelte";
-  import { userState } from "$lib/store/LocalStorage.svelte"; 
+  import { userState, userToken } from "$lib/store/LocalStorage.svelte";
+  import LoginPopup from "$lib/components/login-popup/+login-popup.svelte";
+  import { goto } from "$app/navigation";
 
-  // placeholders
-  let loggedIn = $state(true);
+  let loggedIn = $derived(!!$userToken);
+
   let onLogout = (): void => {
-    loggedIn = false;
     console.log("Logged out");
-    localStorage.removeItem("token");
+    userToken.set(null);
+    userState.set(null);
     toast.success("Logged out", {
       duration: 2000,
       description: "You have been successfully logged out"
     });
   };
 
-  // const signIn = (): void => {
-  //   window.open(
-  //     `https://api.potat.industries/login`,
-  //     '_blank',
-  //     'width=600,height=400'
-  //   );
-  // };
-
-  let onLogin = async (): Promise<void> => {
-    const apiRequest = async (): Promise<boolean> => {
-      // 50/50 for now
-      return Math.random() > 0.5;
-    }
-
-    if (!(await apiRequest())) {
-      toast.error("Failed to log in", {
-        duration: 2000,
-        description: "Something went wrong"
-      });
-
-      return;
-    }
-
-    loggedIn = true;
-    console.log("Logging in");
-    localStorage.setItem("token", "1234");
-    let description = 'Sucessfully logged in';
-
-    
-  
-    const userData = userState.current;
-    if (userData && typeof userData === 'string') {
-      try {
-        const user = JSON.parse(userData);
-        console.log(userData, user)
-        if (user) {
-          description = `Welcome back ${user.login}`;
-        }
-      } catch {
-        // todo
-      }
-    }
-
-    toast.success("Logged in", {
-      duration: 2000,
-      description
-    });
-  };
-
   const openPage = (page: string): void => {
     console.log(`Opening ${page}`);
-    window.location.href = `/dashboard/${page}`;
+    goto(`/dashboard/${page}`);
   };
 
   // mock
@@ -91,15 +44,18 @@
   const handleMessage = (event: MessageEvent) => {
     const { id, login, name, stv_id, token, is_channel } = event.data ?? {};
 
-    if (!token) {
+    if (!token || !id) {
       return;
     }
 
-    localStorage.setItem('authorization', token);
-    localStorage.setItem(
-      'userState',
-      JSON.stringify({ id, login, name, stv_id, is_channel })
-    );
+    userToken.set(token);
+    userState.set({
+      id,
+      login,
+      name,
+      stv_id,
+      is_channel
+    });
   };
 
   onMount((): void => {
@@ -154,7 +110,7 @@
 
         <DropdownMenu.Separator />
 
-        <DropdownMenu.Item on:click={()=>openPage(`user/${userState.current?.login ?? ''}`)}>
+        <DropdownMenu.Item on:click={()=>openPage(`user/${$userState?.login ?? ''}`)}>
           <Settings class="mr-2 h-4 w-4" />
           <span>User Settings</span>
         </DropdownMenu.Item>
@@ -198,22 +154,6 @@
 
     </DropdownMenu.Root>
   {:else}
-    <AlertDialog.Root on:cancel={()=>{}}>
-      <AlertDialog.Trigger>
-        <Button variant="ghost" size="default">
-          Login
-        </Button>
-      </AlertDialog.Trigger>
-      <AlertDialog.Content>
-        <AlertDialog.Header>
-          <AlertDialog.Action on:click={onLogin}>
-            Sign in with Twitch
-          </AlertDialog.Action>
-        </AlertDialog.Header>
-        <AlertDialog.Footer>
-          By signing in, you agree to our Privacy Policy and Terms of Service.
-        </AlertDialog.Footer>
-      </AlertDialog.Content>
-    </AlertDialog.Root>
+    <LoginPopup />
   {/if}
 </div>

@@ -74,11 +74,11 @@
   class:pl-[150px]={sidebarExpanded}
 >
   <aside
-    class="inset-y fixed left-0 z-20 flex h-full flex-col border-r"
+    class="inset-y fixed left-0 z-20 flex h-full flex-col"
     class:w-[53px]={!sidebarExpanded}
     class:w-[150px]={sidebarExpanded}
   >
-    <div class="border-b p-2">
+    <div class="p-2">
       <Button variant="outline" size="icon" aria-label="Toggle sidebar" on:click={toggleSidebar}>
         {#if sidebarExpanded}
           <ArrowLeftFromLine class="fill-foreground size-5" />

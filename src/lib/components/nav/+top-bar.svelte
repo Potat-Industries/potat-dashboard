@@ -5,6 +5,7 @@
   // TODO: $types?
   import type { ChannelPartial } from "../../../routes/+layout";
   import { userState } from "$lib/store/LocalStorage.svelte"; 
+  import LoginPopup from "../login-popup/+login-popup.svelte";
 
   let { channels }: { channels: ChannelPartial[] } = $props();
   
@@ -21,6 +22,13 @@
     const path = `/dashboard/channel/${channel}`;
     window.location.href = path;
   }
+
+  let openPopup = $state(false);
+  const handleClickington = (): void => {
+    if (!$userState?.login) {
+      openPopup = true;
+    }
+  };
 
   const handleEnterPress = (event: KeyboardEvent) => {
     if (event.key !== 'Enter' || !searchQuery) {
@@ -40,8 +48,12 @@
     <Button variant="ghost">
       <a href="/dashboard/">PotatBotat</a>
     </Button>
-    <Button variant="ghost">
-      <a href="/dashboard/channel/{userState.current?.login ?? ''}">My Channel</a>
+    <Button variant="ghost" onclick={handleClickington}>
+      {#if $userState?.login}
+        <a href="/dashboard/channel/{$userState?.login ?? ''}">My Channel</a>  
+      {:else} 
+        My channel
+      {/if}
     </Button>
   </div>
   <div class="search-container">
@@ -72,6 +84,8 @@
     <Dropdown />
   </div>
 </nav>
+
+<LoginPopup open={openPopup} empty={true} />
 
 <style>
   nav {
