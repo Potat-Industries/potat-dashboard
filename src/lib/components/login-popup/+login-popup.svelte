@@ -1,13 +1,16 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Button } from "$lib/components/ui/button/index.js";
   import { userState, userToken } from "$lib/store/LocalStorage.svelte";
+  import { onMount } from "svelte";
 
   let { open = false, empty = false } = $props();
 
   let onLogin = async (): Promise<void> => {
+    // TODO: env variable for the login URL
     window.open(
-      `https://api.potat.industries/login`,
+      `https://api.potat.app/login`,
       '_blank',
       'width=600,height=400'
     );
@@ -24,6 +27,29 @@
 
     open = false;
   };
+
+  const handleMessage = (event: MessageEvent) => {
+    const { id, login, name, stv_id, token, is_channel } = event.data ?? {};
+
+    if (!token || !id) {
+      return;
+    }
+
+    userToken.set(token);
+    userState.set({
+      id,
+      login,
+      name,
+      stv_id,
+      is_channel
+    });
+  };
+
+  onMount((): void => {
+    if (browser) {
+      window.addEventListener('message', handleMessage);
+    }
+  })
 </script>
 
 <AlertDialog.Root bind:open on:cancel={() => (open = false)}>
@@ -46,9 +72,9 @@
     <AlertDialog.Footer>
       <p>
         By signing in, you agree to our
-        <a href="/privacy"> Privacy Policy </a>
+        <a href="/dashboard/privacy"> Privacy Policy </a>
         and
-        <a href="/terms"> Terms of Service</a>.
+        <a href="/dashboard/terms"> Terms of Service</a>.
       </p>
     </AlertDialog.Footer>    
     

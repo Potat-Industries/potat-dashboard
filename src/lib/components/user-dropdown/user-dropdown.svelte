@@ -13,7 +13,6 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { toast } from "svelte-sonner";
   import { setMode } from "mode-watcher";
-  import { onMount } from "svelte";
   import { userState, userToken } from "$lib/store/LocalStorage.svelte";
   import LoginPopup from "$lib/components/login-popup/+login-popup.svelte";
   import { goto } from "$app/navigation";
@@ -40,27 +39,6 @@
     pfp: "https://cdn.7tv.app/user/01G6HF7Y9R000AE6YXS14X580S/profile-picture/01H6MCAQ7G000EBVZZZ8Y7EDPR/3x.avif",
     login: "RyanPotat",
   };
-
-  const handleMessage = (event: MessageEvent) => {
-    const { id, login, name, stv_id, token, is_channel } = event.data ?? {};
-
-    if (!token || !id) {
-      return;
-    }
-
-    userToken.set(token);
-    userState.set({
-      id,
-      login,
-      name,
-      stv_id,
-      is_channel
-    });
-  };
-
-  onMount((): void => {
-    window.addEventListener('message', handleMessage);
-  })
 </script>
 
 <div>
