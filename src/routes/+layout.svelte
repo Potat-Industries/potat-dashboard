@@ -57,6 +57,7 @@
 
   header {
     position: sticky;
+    z-index: 2;
     top: 0;
     background: rgba(var(--bbackground), 0.5);
   }

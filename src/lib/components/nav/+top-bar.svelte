@@ -1,21 +1,21 @@
 <script lang="ts">
   import Dropdown from '$lib/components/user-dropdown/user-dropdown.svelte';
-  import { CircleAlert, X } from "lucide-svelte";
+  import { CircleAlert, X } from 'lucide-svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
-  import * as Alert from "$lib/components/ui/alert";
+  import * as Alert from '$lib/components/ui/alert';
   // TODO: $types?
   import type { ChannelPartial } from '../../../routes/+layout';
   import { userState } from '$lib/store/LocalStorage.svelte';
   import LoginPopup from '../login-popup/+login-popup.svelte';
   import { goto } from '$app/navigation';
-  
+
   let { channels }: { channels: ChannelPartial[] } = $props();
-  
+
   let show = $state(true);
   let searchQuery: string = $state('');
   let openPopup = $state(false);
-  
+
   let filteredChannels: ChannelPartial[] = $derived(
     channels
       .filter(channel => channel.username.startsWith(searchQuery.toLowerCase()))
@@ -90,15 +90,15 @@
 </nav>
 
 {#if show}
-  <Alert.Root 
-    variant="warning" 
+  <Alert.Root
+    variant="warning"
     class="relative items-center justify-between p-4"
   >
     <CircleAlert class="h-4 w-4" />
     <Alert.Description>
       This website is currently in beta and nothing is functional. Stay tuned for poggers happy funtime features!
     </Alert.Description>
-    <Button 
+    <Button
       variant="ghost"
       class="absolute right-2 top-1/2 transform -translate-y-1/2 text-yellow-900 dark:text-yellow-100 hover:opacity-70"
       on:click={() => (show = false)}
@@ -123,7 +123,7 @@
     border-bottom: 1px solid hsl(var(--border));
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
-    z-index: 1000;
+    z-index: 3;
   }
 
   .left-section, .right-section {
@@ -158,7 +158,7 @@
     margin-top: 10px;
 
     overflow-y: auto;
-    z-index: 9999;
+    z-index: 4;
     padding: 0;
   }
 
