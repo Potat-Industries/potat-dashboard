@@ -13,7 +13,7 @@
   let { tabs }: { tabs: TabConfig[] } = $props();
 
   let sidebarExpanded: boolean = $state(false);
-  let activeTab = $state(tabs[0]?.id);
+  let activeTab: string | undefined = $state(undefined);
 
   $effect(() => {
     const h = $page.url.hash.replace('#', '');
@@ -115,21 +115,34 @@
       {/each}
     </nav>
   </aside>
-  <div class="flex flex-col">
-    <main class="flex-1 overflow-auto p-4">
-      <Tabs bind:value={activeTab} on:change={(e) => handleTabChange(e.detail.value)}>
-        {#each tabs as tab (tab.id)}
-          <TabsContent value={tab.id}>
-            {#if tab.component}
-              {#key tab.id}
-                <tab.component />
-              {/key}
-            {/if}
-          </TabsContent>
-        {/each}
-      </Tabs>
-    </main>
-  </div>
+  {#if activeTab === undefined}
+    <div class="flex justify-center">
+      <form class="w-full max-w-3xl p-20">
+        <fieldset class="space-y-8 rounded-lg border p-6" style="box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3)">
+          <div class="flex justify-center">
+            <span class="loading loading-ring loading-sm"></span>
+            <p>Loading...</p>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  {:else}
+    <div class="flex flex-col">
+      <main class="flex-1 overflow-auto p-4">
+        <Tabs bind:value={activeTab} on:change={(e) => handleTabChange(e.detail.value)}>
+          {#each tabs as tab (tab.id)}
+            <TabsContent value={tab.id}>
+              {#if tab.component}
+                {#key tab.id}
+                  <tab.component />
+                {/key}
+              {/if}
+            </TabsContent>
+          {/each}
+        </Tabs>
+      </main>
+    </div>
+  {/if}
 </div>
 
 <style>
