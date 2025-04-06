@@ -8,11 +8,21 @@
   import { browser } from '$app/environment';
   import type { TabConfig } from '.';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
 
   let { tabs }: { tabs: TabConfig[] } = $props();
 
   let sidebarExpanded: boolean = $state(false);
-  let activeTab = $state(tabs[0]?.id || '');
+  let activeTab = $state(tabs[0]?.id);
+
+  $effect(() => {
+    const h = $page.url.hash.replace('#', '');
+    if (h && tabs.some(t => t.id === h)) {
+      activeTab = h;
+    } else {
+      activeTab = tabs[0]?.id;
+    }
+  });
 
   const toggleSidebar = () => {
     sidebarExpanded = !sidebarExpanded;
@@ -32,13 +42,6 @@
     goto(`#${value}`);
   };
 
-  const updateActiveTabFromHash = () => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash && tabs.some(tab => tab.id === hash)) {
-      activeTab = hash;
-    }
-  };
-
   const checkSidebarWidth = () => {
     // TODO: dynamically open the sidebar on page width?
     const savedSidebarState = localStorage.getItem('sidebarExpanded');
@@ -50,10 +53,7 @@
   };
 
   onMount(() => {
-    activeTab = tabs[0]?.id;
     if (browser) {
-      updateActiveTabFromHash();
-      window.addEventListener('hashchange', updateActiveTabFromHash);
       checkSidebarWidth();
 
       window.addEventListener('resize', checkSidebarWidth);
@@ -62,7 +62,6 @@
 
   onDestroy(() => {
     if (browser) {
-      window.removeEventListener('hashchange', updateActiveTabFromHash);
       window.removeEventListener('resize', checkSidebarWidth);
     }
   });

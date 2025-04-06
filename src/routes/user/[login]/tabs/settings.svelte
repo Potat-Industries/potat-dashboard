@@ -5,7 +5,6 @@
 
   const loadUserSettings = async (): Promise<Record<string, unknown>> => {
     // mock api call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     return {
       language: 'English',
