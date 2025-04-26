@@ -127,7 +127,8 @@ export const fetchBackend = async <T = unknown>(
 	options?: ExtendedOptions
 ): Promise<ParsedRes<GenericResponse<T>>> => {
 	const result = await makeRequest<GenericResponse<T>>(
-		`https://api.potat.industries/${url}`,
+		/** @todo load from env */
+		`https://api.potat.app/${url}`,
 		options
 	);
 
