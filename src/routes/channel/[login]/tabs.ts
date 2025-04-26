@@ -4,6 +4,7 @@ import Settings from './tabs/settings.svelte';
 import CustomCommands from './tabs/custom-commands.svelte';
 import ModActions from './tabs/mod-actions.svelte';
 import EmoteActions from './tabs/emote-history.svelte';
+import EmoteStats from './tabs/emote-stats.svelte';
 
 export const tabs: TabConfig[] = [
   {
@@ -11,6 +12,12 @@ export const tabs: TabConfig[] = [
     label: 'Emote Actions',
     icon: Settings2,
     component: EmoteActions,
+  },
+  {
+    id: 'emote-stats',
+    label: 'Emote Stats',
+    icon: Settings2,
+    component: EmoteStats,
   },
   {
     id: 'custom-commands',
