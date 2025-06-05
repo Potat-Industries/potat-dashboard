@@ -31,6 +31,12 @@ export const conns = [
     color: '#00e701',
   },
   {
+    description: 'By linking your Trakt account, you allow PotatBotat to view your username and ID, view your watched shows and movies, and update your lists.',
+    icon: 'https://walter-r2.trakt.tv/hotlink-ok/public/2024/favicon.png',
+    name: 'Trakt',
+    color: '#9F42C6',
+  },
+  {
     description: 'This connection is automatically linked based on your Twitch account.',
     icon: 'https://7tv.app/favicon.svg',
     name: '7TV',

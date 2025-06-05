@@ -37,7 +37,7 @@
 <div style="margin-top: 0px; margin-bottom: 30px;">
   <div class="flex items-center justify-between ">
     <div class="flex items-center space-x-4">
-      <Avatar.Root class="h-12 w-12">
+      <Avatar.Root class="h-11 w-11 rounded-none">
         <Avatar.Image src={platform.icon} alt={platform.name} />
       </Avatar.Root>
       <div><b>{platform.name}</b></div>
