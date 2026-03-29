@@ -27,9 +27,14 @@
   onMount(() => {
     if (!browser) return;
 
+    let sections = Array.from(document.querySelectorAll<HTMLElement>('fieldset[id]'));
+
+    const refreshSections = () => {
+      sections = Array.from(document.querySelectorAll<HTMLElement>('fieldset[id]'));
+    };
+
     const updateActive = () => {
       if (scrollLock) return;
-      const sections = Array.from(document.querySelectorAll<HTMLElement>('fieldset[id]'));
       const threshold = window.innerHeight * 0.35;
       const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 32;
       if (nearBottom) {
@@ -46,12 +51,18 @@
     };
 
     window.addEventListener('scroll', updateActive, { passive: true });
+    window.addEventListener('resize', refreshSections, { passive: true });
     updateActive();
-    return () => window.removeEventListener('scroll', updateActive);
+    return () => {
+      window.removeEventListener('scroll', updateActive);
+      window.removeEventListener('resize', refreshSections);
+      if (scrollLockTimer) { clearTimeout(scrollLockTimer); scrollLockTimer = null; }
+    };
   });
 
   function scrollTo(id: string) {
     activeSection = id;
+    history.replaceState(null, '', `#${id}`);
     scrollLock = true;
     if (scrollLockTimer) clearTimeout(scrollLockTimer);
     scrollLockTimer = setTimeout(() => { scrollLock = false; }, 800);
@@ -70,12 +81,13 @@
       <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 px-2">On this page</p>
       <nav class="flex flex-col gap-0.5">
         {#each tocItems as item}
-          <button
-            onclick={(e) => { (e.currentTarget as HTMLElement).blur(); scrollTo(item.id); }}
-            class="w-full text-left text-sm py-1 px-2 rounded transition-colors {item.indent ? 'pl-6' : ''} {activeSection === item.id ? 'bg-muted text-foreground font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}"
+          <a
+            href="#{item.id}"
+            onclick={(e) => { e.preventDefault(); scrollTo(item.id); }}
+            class="block text-left text-sm py-1 px-2 rounded transition-colors {item.indent ? 'pl-6' : ''} {activeSection === item.id ? 'bg-muted text-foreground font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}"
           >
             {item.label}
-          </button>
+          </a>
         {/each}
       </nav>
     </div>
@@ -393,7 +405,6 @@
       <legend class="px-2 text-lg font-semibold">#pipe Variables</legend>
       <p class="text-sm text-muted-foreground mb-4">
         Used when chaining commands with a pipe <code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">|</code>.
-        Processed in <span class="font-medium">pipe.ts</span>.
       </p>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -506,7 +517,7 @@
     <fieldset id="pyramid-response" class="rounded-lg border p-6 shadow-sm">
       <legend class="px-2 text-lg font-semibold">#pyramidresponse Variables</legend>
       <p class="text-sm text-muted-foreground mb-4">
-        Used in the channel's <span class="font-medium">pyramid response</span> setting. Processed in <span class="font-medium">Utils.ts</span>.
+        Used in the channel's <span class="font-medium">pyramid response</span> setting.
       </p>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -542,7 +553,7 @@
     <fieldset id="emote-streak" class="rounded-lg border p-6 shadow-sm">
       <legend class="px-2 text-lg font-semibold">#emotestreak Variables</legend>
       <p class="text-sm text-muted-foreground mb-4">
-        Used in the channel's <span class="font-medium">emote streak response</span> setting. Processed in <span class="font-medium">Utils.ts</span>.
+        Used in the channel's <span class="font-medium">emote streak response</span> setting.
       </p>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -582,7 +593,7 @@
     <fieldset id="follow-responses" class="rounded-lg border p-6 shadow-sm">
       <legend class="px-2 text-lg font-semibold">#followresponses Variable</legend>
       <p class="text-sm text-muted-foreground mb-4">
-        Used in the channel's <span class="font-medium">follow response</span> setting. Processed in <span class="font-medium">eventsubHandler.ts</span>.
+        Used in the channel's <span class="font-medium">follow response</span> setting.
         Note: uses <code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{'${}' }</code> syntax instead of <code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{'{}'}</code>.
       </p>
       <div class="overflow-x-auto">
@@ -607,7 +618,7 @@
     <fieldset id="giveaway" class="rounded-lg border p-6 shadow-sm">
       <legend class="px-2 text-lg font-semibold">#giveaway output: Variables</legend>
       <p class="text-sm text-muted-foreground mb-4">
-        Available in the giveaway output message. Processed in <span class="font-medium">giveaway.ts</span>.
+        Available in the giveaway output message.
       </p>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
