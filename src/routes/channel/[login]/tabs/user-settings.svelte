@@ -1,7 +1,7 @@
  <script lang="ts">
   import PotatSettings from '$lib/components/settings/+settings.svelte';
   import { onMount } from 'svelte';
-  import { userSettingDefaults } from './settings';
+  import { userSettingDefaults } from './user-settings';
   import { fetchBackend } from '$lib/utils';
 
   const loadUserSettings = async (): Promise<Record<string, unknown>> => {

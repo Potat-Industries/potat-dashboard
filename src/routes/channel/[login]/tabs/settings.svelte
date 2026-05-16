@@ -2,41 +2,38 @@
   import PotatSettings from '$lib/components/settings/+settings.svelte';
   import { channelSettingDefaults } from './settings';
   import { onMount } from 'svelte';
+  import { fetchBackend } from '$lib/utils';
+  import { userState } from '$lib/store/LocalStorage.svelte';
 
   const loadChannelSettings = async (): Promise<Record<string, unknown>> => {
-    // mock api call
-
-    return {
-      prefix: '#',
-      color_responses: true,
-      permission: 'VIP',
-      online_permission: 'MOD',
-      no_reply: false,
-      silent_errors: false,
-      online_silent_errors: false,
-      offline_only: true,
-      whisper_only: false,
-      online_whisper_only: false,
-      language: 'English',
-      channel_cooldown: null,
-      user_cooldown: null,
-      force_language: false,
-      paj_bot: null,
-      allow_bot_emote_tracking: false,
-      emote_streak_response: null,
-      pyramid_response: null,
-      ignore_dropped: false,
-    };
+    const id = $userState?.id;
+    if (!id) return {};
+    try {
+      const res = await fetchBackend<Record<string, unknown>>('channel/settings', {
+        auth: true,
+        params: { id },
+      });
+      if (res.errors?.length || !res.data?.[0]) return {};
+      return res.data[0];
+    } catch {
+      return {};
+    }
   };
 
   const updateChannelSettings = async (
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    _: Record<string, unknown>
+    settings: Record<string, unknown>
   ): Promise<{ ok: boolean, error: string }> => {
-    // mock api call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    return { ok: Math.random() > 0.5, error: '' };
+    const id = $userState?.id;
+    if (!id) return { ok: false, error: 'Not logged in' };
+    const res = await fetchBackend<Record<string, unknown>>('channels/me/settings', {
+      method: 'PATCH',
+      auth: true,
+      params: { id },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    });
+    if (res.errors?.length) return { ok: false, error: res.errors[0].message };
+    return { ok: res.statusCode >= 200 && res.statusCode < 300, error: '' };
   };
 
   onMount(() => loadChannelSettings());

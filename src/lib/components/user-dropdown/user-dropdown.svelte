@@ -3,6 +3,7 @@
   import LogOut from 'lucide-svelte/icons/log-out';
   import Lock from 'lucide-svelte/icons/lock';
   import Handshake from 'lucide-svelte/icons/handshake';
+  import MessageCircle from 'lucide-svelte/icons/message-circle';
   import SunMoon from 'lucide-svelte/icons/sun-moon';
   import Settings from 'lucide-svelte/icons/settings';
   import * as Avatar from '$lib/components/ui/avatar';
@@ -34,11 +35,8 @@
     goto(`/dashboard/${page}`);
   };
 
-  // mock
-  let user = {
-    pfp: 'https://cdn.7tv.app/user/01G6HF7Y9R000AE6YXS14X580S/profile-picture/01H6MCAQ7G000EBVZZZ8Y7EDPR/3x.avif',
-    login: 'RyanPotat',
-  };
+  let userPfp = $derived($userState?.pfp ?? null);
+  let userLogin = $derived($userState?.name ?? $userState?.login ?? '');
 </script>
 
 <div>
@@ -53,12 +51,12 @@
           builders={[builder]}
         >
           <Avatar.Root class="h-6 w-6">
-            <Avatar.Image src={user.pfp} alt="User avatar" />
+            <Avatar.Image src={userPfp} alt="User avatar" />
             <Avatar.Fallback>
               <img src=/dashboard/default-pfp.png alt="Default avatar"/>
             </Avatar.Fallback>
           </Avatar.Root>
-          <span class="leading-none">{user.login}</span>
+          <span class="leading-none">{userLogin}</span>
           <ChevronDown class="size-4" />
         </Button>
       </DropdownMenu.Trigger>
@@ -104,7 +102,7 @@
           <span>Terms of Service</span>
         </DropdownMenu.Item>
         <DropdownMenu.Item on:click={()=>openPage('contact')}>
-          <Handshake class="mr-2 h-4 w-4" />
+          <MessageCircle class="mr-2 h-4 w-4" />
           <span>Contact</span>
         </DropdownMenu.Item>
 

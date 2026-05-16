@@ -20,8 +20,7 @@
     src={src}
     alt={alt}
     title={title}
-    style="display: {loaded ? 'inline' : 'none'}"
-    class={cn('h-full w-auto', loaded ? 'hidden' : null, extraClass)}
+    class={cn('h-full w-auto', !loaded ? 'hidden' : null, extraClass)}
     onload={handleLoad}
   />
 </a>

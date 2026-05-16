@@ -6,6 +6,7 @@ export interface UserState {
   name: string;
   stv_id: string;
   is_channel: boolean;
+  pfp?: string;
 }
 
 export const Storage = {
