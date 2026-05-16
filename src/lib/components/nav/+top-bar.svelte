@@ -85,7 +85,6 @@
   </div>
 </nav>
 
-
 {#if openPopup}
   <LoginPopup bind:open={openPopup} empty={true} />
 {/if}
@@ -108,17 +107,6 @@
     display: flex;
     gap: 8px;
     align-items: center;
-  }
-
-  a {
-    color: hsl(var(--foreground));
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-  }
-
-  a:hover {
-    color: hsl(var(--primary));
   }
 
   .search-container {

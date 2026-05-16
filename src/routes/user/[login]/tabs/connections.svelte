@@ -72,7 +72,8 @@
         duration: 2000,
         description: `Successfully disconnected from ${platform}`,
       });
-    } finally {
+    } catch {
+      // ignore
     }
   };
 

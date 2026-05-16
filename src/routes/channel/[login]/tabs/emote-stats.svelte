@@ -45,7 +45,6 @@
     },
   };
 
-  let observer: IntersectionObserver;
   let isLoading = $state(false);
   let loaded = $state(false);
   let order = $state<Selected<Order>>({ value: 'desc' });
@@ -124,7 +123,7 @@
       entries => {
         if (entries[0].isIntersecting && !isLoading && cursor) fetchEmoteStats();
       },
-      { rootMargin: '400px' },
+      { rootMargin: '400px' }
     );
     io.observe(sentinel);
     return () => io.disconnect();
@@ -269,8 +268,3 @@
     {/if}
   </fieldset>
 </div>
-
-<style scoped>
-  .emote-list::-webkit-scrollbar { width: 0; background: transparent; }
-  .emote-list::-webkit-scrollbar-thumb { background: transparent; }
-</style>

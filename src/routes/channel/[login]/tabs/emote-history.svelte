@@ -41,6 +41,7 @@
     readonly method: string;
     readonly word: string;
     readonly expiry: string | null;
+    readonly expired: boolean;
   }
 
   interface SimpleChannel {
@@ -231,7 +232,7 @@
           fetchEmoteHistory(cursor);
         }
       },
-      { rootMargin: '400px' },
+      { rootMargin: '400px' }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
