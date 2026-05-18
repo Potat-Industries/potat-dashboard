@@ -18,8 +18,8 @@
     dateReady: string;
   };
 
-  let reminders: Reminder[] = [];
-  let isLoading = false;
+  let reminders: Reminder[] = $state([]);
+  let isLoading = $state(false);
   let reminderToDelete: number | null = $state(null);
   let deletingReminder = $state(false);
 
