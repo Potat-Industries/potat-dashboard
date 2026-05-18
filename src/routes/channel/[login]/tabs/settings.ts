@@ -1,5 +1,5 @@
 import type { Setting } from '$lib/components/settings';
-import langauges from '$lib/langauges';
+import languages from '$lib/languages';
 
 export const channelSettingDefaults: Setting[] = [
   {
@@ -83,7 +83,7 @@ export const channelSettingDefaults: Setting[] = [
     value: 'English',
     type: 'choice',
     description: 'The language the bot will use to communicate with users in your channel.',
-    possibleValues: langauges,
+    possibleValues: languages,
     defaults: ['English', 'Portuguese', 'Spanish', 'German', 'Russian"'],
   },
   {

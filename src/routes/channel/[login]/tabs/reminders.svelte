@@ -7,6 +7,7 @@
   import { Label } from '$lib/components/ui/label/index.js';
   import { toast } from 'svelte-sonner';
   import { fetchBackend } from '$lib/utils';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog';
 
   type Reminder = {
     reminder_id: number;
@@ -19,6 +20,8 @@
 
   let reminders: Reminder[] = [];
   let isLoading = false;
+  let reminderToDelete: number | null = $state(null);
+  let deletingReminder = $state(false);
 
   let newReminder = {
     message: '',
@@ -49,7 +52,10 @@
     }
   };
 
-  const deleteReminder = async (id: number) => {
+  const deleteReminder = async () => {
+    const id = reminderToDelete;
+    if (id === null) return;
+    deletingReminder = true;
     try {
       const res = await fetchBackend(`user/reminders/${id}`, {
         method: 'DELETE',
@@ -67,6 +73,9 @@
     } catch (error) {
       toast.error('Failed to delete reminder');
       console.error(error);
+    } finally {
+      deletingReminder = false;
+      reminderToDelete = null;
     }
   };
 
@@ -74,6 +83,27 @@
     reminders = await loadReminders();
   });
 </script>
+
+<AlertDialog.Root open={reminderToDelete !== null} onOpenChange={(o) => { if (!o) reminderToDelete = null; }}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete reminder #{reminderToDelete}?</AlertDialog.Title>
+      <AlertDialog.Description>
+        This reminder will be permanently deleted and cannot be recovered.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action
+        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        on:click={deleteReminder}
+        disabled={deletingReminder}
+      >
+        {deletingReminder ? 'Deleting…' : 'Delete'}
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <div class="flex justify-center">
   <fieldset class="grid gap-6 rounded-lg border p-4" style="padding: 0px; padding-left: 20px; padding-right: 20px;">
@@ -150,7 +180,7 @@
               <Button
                 variant="destructive"
                 size="sm"
-                on:click={() => deleteReminder(reminder.reminder_id)}
+                on:click={() => (reminderToDelete = reminder.reminder_id)}
               >
                 Delete
               </Button>

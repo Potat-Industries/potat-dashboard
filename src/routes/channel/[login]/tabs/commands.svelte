@@ -18,6 +18,7 @@
     DialogDescription,
     DialogFooter,
   } from '$lib/components/ui/dialog/index.js';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog';
   import { fetchBackend } from '$lib/utils';
   import { userState } from '$lib/store/LocalStorage.svelte';
   import type { ChannelCommand, CommandSettings, BotCommand } from '$lib/types';
@@ -67,6 +68,7 @@
   let editingId = $state<number | null>(null);
   let savingCommand = $state(false);
   let deletingId = $state<number | null>(null);
+  let commandToDelete = $state<ChannelCommand | null>(null);
   let commandForm = $state<CommandForm>(emptyCommandForm());
   let customSearch = $state('');
 
@@ -307,7 +309,9 @@
     }
   };
 
-  const deleteCommand = async (cmd: ChannelCommand) => {
+  const deleteCommand = async () => {
+    const cmd = commandToDelete;
+    if (!cmd) return;
     deletingId = cmd.command_id;
     try {
       const res = await fetchBackend('channel/commands', {
@@ -323,6 +327,7 @@
       toast.success(`${getUsage(cmd)} deleted`, { duration: 2000 });
     } finally {
       deletingId = null;
+      commandToDelete = null;
     }
   };
 
@@ -451,6 +456,28 @@
     loadBot();
   });
 </script>
+
+<!-- Delete command confirmation -->
+<AlertDialog.Root open={commandToDelete !== null} onOpenChange={(o) => { if (!o) commandToDelete = null; }}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete {commandToDelete ? getUsage(commandToDelete) : ''}?</AlertDialog.Title>
+      <AlertDialog.Description>
+        This command will be permanently deleted and cannot be recovered.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action
+        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        on:click={deleteCommand}
+        disabled={deletingId !== null}
+      >
+        {deletingId !== null ? 'Deleting…' : 'Delete'}
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <!-- Custom command dialog -->
 <Dialog bind:open={customDialogOpen}>
@@ -684,7 +711,7 @@
                         variant="destructive"
                         size="sm"
                         disabled={deletingId === cmd.command_id}
-                        on:click={() => deleteCommand(cmd)}
+                        on:click={() => (commandToDelete = cmd)}
                       >
                         Delete
                       </Button>

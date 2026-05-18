@@ -6,6 +6,7 @@
   import { userState, userToken } from '$lib/store/LocalStorage.svelte';
   import { fetchBackend } from '$lib/utils';
   import { env } from '$env/dynamic/public';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog';
 
   interface UserConnection {
     platform: string;
@@ -14,6 +15,8 @@
   }
 
   let userConnections: UserConnection[] = $state([]);
+  let pendingDisconnect: string | null = $state(null);
+  let disconnecting = $state(false);
 
   const apiBase = env.PUBLIC_API_BASE_URL ?? 'https://api.potat.app';
 
@@ -63,17 +66,41 @@
     }
   };
 
-  const disconnect = async (platform: string): Promise<void> => {
+  const disconnect = (platform: string): void => {
+    pendingDisconnect = platform;
+  };
+
+  const confirmDisconnect = async (): Promise<void> => {
+    const platform = pendingDisconnect;
+    if (!platform) return;
+    disconnecting = true;
     try {
-      console.log('Disconnecting from', platform);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await fetchBackend(`auth/${platform.toLowerCase()}/disconnect`, {
+        method: 'DELETE',
+        auth: true,
+      });
+      if (res.errors?.length) {
+        toast.error('Error', {
+          duration: 5000,
+          description: `Failed to disconnect from ${platform}: ${res.errors[0].message}`,
+        });
+        return;
+      }
       userConnections = userConnections.filter(conn => conn.platform !== platform);
       toast.success('Disconnected', {
         duration: 2000,
         description: `Successfully disconnected from ${platform}`,
       });
-    } catch {
-      // ignore
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error('Error', {
+          duration: 5000,
+          description: `Failed to disconnect from ${platform}: ${error.message}`,
+        });
+      }
+    } finally {
+      disconnecting = false;
+      pendingDisconnect = null;
     }
   };
 
@@ -118,6 +145,27 @@
     userConnections = [...connections];
   });
 </script>
+
+<AlertDialog.Root open={pendingDisconnect !== null} onOpenChange={(o) => { if (!o) pendingDisconnect = null; }}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Disconnect {pendingDisconnect}?</AlertDialog.Title>
+      <AlertDialog.Description>
+        This will unlink your {pendingDisconnect} account from PotatBotat. You can reconnect at any time.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action
+        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        on:click={confirmDisconnect}
+        disabled={disconnecting}
+      >
+        {disconnecting ? 'Disconnecting…' : 'Disconnect'}
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <div class="flex justify-center px-4">
   <fieldset class="w-full max-w-3xl space-y-8 rounded-lg border p-6">

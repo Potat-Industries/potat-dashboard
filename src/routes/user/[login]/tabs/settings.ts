@@ -1,5 +1,5 @@
 import type { Setting } from '$lib/components/settings';
-import langauges from '$lib/langauges';
+import languages from '$lib/languages';
 
 export const userSettingDefaults: Setting[] = [
   {
@@ -7,7 +7,7 @@ export const userSettingDefaults: Setting[] = [
     value: 'English',
     type: 'choice',
     description: 'The language the bot will use to communicate with you in chat.',
-    possibleValues: langauges,
+    possibleValues: languages,
     defaults: ['English', 'Portuguese', 'Spanish', 'German'],
   },
   {
