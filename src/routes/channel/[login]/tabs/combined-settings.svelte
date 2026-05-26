@@ -4,68 +4,21 @@
   import { channelSettingDefaults } from './settings';
   import { userSettingDefaults } from './user-settings';
   import Connections from './connections.svelte';
-  import { onMount } from 'svelte';
-  import { fetchBackend } from '$lib/utils';
   import { userState } from '$lib/store/LocalStorage.svelte';
+  import { getChannelSettings, updateChannelSettings } from '$lib/api/channels';
+  import { getUserSettings, updateUserSettings } from '$lib/api/users';
 
-  const loadChannelSettings = async (): Promise<Record<string, unknown>> => {
+  const loadChannelSettings = () => {
     const id = $userState?.id;
-    if (!id) return {};
-    try {
-      const res = await fetchBackend<Record<string, unknown>>('channel/settings', {
-        auth: true,
-        params: { id },
-      });
-      if (res.errors?.length || !res.data?.[0]) return {};
-      return res.data[0];
-    } catch {
-      return {};
-    }
+    if (!id) return Promise.resolve({});
+    return getChannelSettings(id);
   };
 
-  const updateChannelSettings = async (
-    settings: Record<string, unknown>
-  ): Promise<{ ok: boolean; error: string }> => {
+  const saveChannelSettings = (s: Record<string, unknown>) => {
     const id = $userState?.id;
-    if (!id) return { ok: false, error: 'Not logged in' };
-    const res = await fetchBackend<Record<string, unknown>>('channels/me/settings', {
-      method: 'PATCH',
-      auth: true,
-      params: { id },
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings),
-    });
-    if (res.errors?.length) return { ok: false, error: res.errors[0].message };
-    return { ok: res.statusCode >= 200 && res.statusCode < 300, error: '' };
+    if (!id) return Promise.resolve({ ok: false, error: 'Not logged in' });
+    return updateChannelSettings(id, s);
   };
-
-  const loadUserSettings = async (): Promise<Record<string, unknown>> => {
-    try {
-      const res = await fetchBackend<Record<string, unknown>>('user/settings', { auth: true });
-      if (res.errors?.length || !res.data?.[0]) return {};
-      return res.data[0];
-    } catch {
-      return {};
-    }
-  };
-
-  const updateUserSettings = async (
-    settings: Record<string, unknown>
-  ): Promise<{ ok: boolean; error: string }> => {
-    const res = await fetchBackend<Record<string, unknown>>('users/me/settings', {
-      method: 'PATCH',
-      auth: true,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings),
-    });
-    if (res.errors?.length) return { ok: false, error: res.errors[0].message };
-    return { ok: res.statusCode >= 200 && res.statusCode < 300, error: '' };
-  };
-
-  onMount(() => {
-    loadChannelSettings();
-    loadUserSettings();
-  });
 </script>
 
 <div class="flex justify-center px-4 py-6">
@@ -82,7 +35,7 @@
           title="Channel Settings"
           defaults={channelSettingDefaults}
           loadSettings={loadChannelSettings}
-          updateSettings={updateChannelSettings}
+          updateSettings={saveChannelSettings}
         />
       </Tabs.Content>
 
@@ -90,7 +43,7 @@
         <PotatSettings
           title="Account Settings"
           defaults={userSettingDefaults}
-          loadSettings={loadUserSettings}
+          loadSettings={getUserSettings}
           updateSettings={updateUserSettings}
         />
       </Tabs.Content>

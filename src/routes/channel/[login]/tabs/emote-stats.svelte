@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { EmoteMetricUse } from '$lib/types';
-  import { fetchBackend } from '$lib/utils';
+  import { getEmoteStats } from '$lib/api/emotes';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { Skeleton } from '$lib/components/ui/skeleton';
@@ -79,19 +79,15 @@
     if (isLoading) return;
     isLoading = true;
     try {
-      const response = await fetchBackend<EmoteMetricUse>('emotes/stats', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        params: {
-          login: $page.params.login,
-          order: order.value,
-          period: period.value,
-          provider: selectedProvider.value,
-          after: cursor,
-        },
+      const result = await getEmoteStats({
+        login: $page.params.login!,
+        order: order.value,
+        period: period.value,
+        provider: selectedProvider.value,
+        after: cursor ?? undefined,
       });
 
-      for (const update of response.data) {
+      for (const update of result.data) {
         if (!update) continue;
         const key = `${update.emote_id}:${update.emote_name}:${update.provider}`;
         if (!seenKeys.has(key)) {
@@ -100,7 +96,7 @@
         }
       }
 
-      cursor = response.pagination?.hasNextPage ? (response.pagination.cursor ?? null) : null;
+      cursor = result.cursor;
     } catch (error) {
       console.error('Error fetching emote stats:', error);
     } finally {

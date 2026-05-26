@@ -19,9 +19,19 @@
     DialogFooter,
   } from '$lib/components/ui/dialog/index.js';
   import * as AlertDialog from '$lib/components/ui/alert-dialog';
-  import { fetchBackend } from '$lib/utils';
   import { userState } from '$lib/store/LocalStorage.svelte';
   import type { ChannelCommand, CommandSettings, BotCommand } from '$lib/types';
+  import {
+    getChannelSettings,
+    getChannelCommands,
+    getBotCommands,
+    getCommandSettings,
+    createChannelCommand,
+    updateChannelCommand,
+    deleteChannelCommand,
+    updateCommandSettings,
+    deleteCommandSettings,
+  } from '$lib/api/channels';
 
   type ResponseType = 'normal' | 'reply' | 'whisper' | 'announce';
 
@@ -174,24 +184,14 @@
     if (!channelId) return;
     customLoading = true;
     try {
-      const [cmdRes, settingsRes] = await Promise.all([
-        fetchBackend<ChannelCommand>('channel/commands', {
-          auth: true,
-          params: { id: channelId },
-        }),
-        fetchBackend<Record<string, unknown>>('channel/settings', {
-          auth: true,
-          params: { id: channelId },
-        }),
+      const [cmds, settings] = await Promise.all([
+        getChannelCommands(channelId),
+        getChannelSettings(channelId),
       ]);
-      if (cmdRes.errors?.length) {
-        toast.error('Failed to load commands', { description: cmdRes.errors[0].message, duration: 4000 });
-      } else {
-        commands = cmdRes.data ?? [];
-      }
-      if (!settingsRes.errors?.length && settingsRes.data?.[0]) {
-        prefix = (settingsRes.data[0] as Record<string, string>).prefix ?? '#';
-      }
+      commands = cmds;
+      prefix = (settings as Record<string, string>).prefix ?? '#';
+    } catch (e) {
+      toast.error('Failed to load commands', { description: e instanceof Error ? e.message : String(e), duration: 4000 });
     } finally {
       customLoading = false;
     }
@@ -200,24 +200,16 @@
   const loadBot = async () => {
     botLoading = true;
     try {
-      const helpRes = await fetchBackend<BotCommand>('help');
-      if (helpRes.errors?.length) {
-        toast.error('Failed to load bot commands', { description: helpRes.errors[0].message, duration: 4000 });
-      } else {
-        botCommands = (helpRes.data ?? []).sort((a, b) =>
-          a.category.localeCompare(b.category) || a.name.localeCompare(b.name)
-        );
-      }
-
-      if (channelId) {
-        const overridesRes = await fetchBackend<CommandSettings>('channel/command-settings', {
-          auth: true,
-          params: { id: channelId },
-        });
-        if (!overridesRes.errors?.length) {
-          overrides = overridesRes.data ?? [];
-        }
-      }
+      const [cmds, overrideList] = await Promise.all([
+        getBotCommands(),
+        channelId ? getCommandSettings(channelId) : Promise.resolve([]),
+      ]);
+      botCommands = cmds.sort((a, b) =>
+        a.category.localeCompare(b.category) || a.name.localeCompare(b.name)
+      );
+      overrides = overrideList;
+    } catch (e) {
+      toast.error('Failed to load bot commands', { description: e instanceof Error ? e.message : String(e), duration: 4000 });
     } finally {
       botLoading = false;
     }
@@ -276,34 +268,19 @@
     };
     try {
       if (editingId !== null) {
-        const res = await fetchBackend<ChannelCommand>('channel/commands', {
-          method: 'PATCH',
-          auth: true,
-          params: { id: channelId, command_id: String(editingId) },
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (res.errors?.length) {
-          toast.error('Failed to update command', { description: res.errors[0].message, duration: 4000 });
-          return;
-        }
+        await updateChannelCommand(channelId, editingId, payload);
         commands = commands.map(c => c.command_id === editingId ? { ...c, ...payload } : c);
         toast.success(`${prefix}${commandForm.trigger} updated`, { duration: 2000 });
       } else {
-        const res = await fetchBackend<ChannelCommand>('channel/commands', {
-          method: 'POST',
-          auth: true,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...payload, channel_id: channelId }),
-        });
-        if (res.errors?.length) {
-          toast.error('Failed to create command', { description: res.errors[0].message, duration: 4000 });
-          return;
-        }
-        if (res.data?.[0]) commands = [...commands, res.data[0]];
+        const newCmd = await createChannelCommand(channelId, payload);
+        if (newCmd) commands = [...commands, newCmd];
         toast.success(`${prefix}${commandForm.trigger} created`, { duration: 2000 });
       }
       customDialogOpen = false;
+    } catch (e) {
+      toast.error(editingId !== null ? 'Failed to update command' : 'Failed to create command', {
+        description: e instanceof Error ? e.message : String(e), duration: 4000,
+      });
     } finally {
       savingCommand = false;
     }
@@ -314,17 +291,11 @@
     if (!cmd) return;
     deletingId = cmd.command_id;
     try {
-      const res = await fetchBackend('channel/commands', {
-        method: 'DELETE',
-        auth: true,
-        params: { id: channelId, command_id: String(cmd.command_id) },
-      });
-      if (res.errors?.length) {
-        toast.error('Failed to delete command', { description: res.errors[0].message, duration: 4000 });
-        return;
-      }
+      await deleteChannelCommand(channelId, cmd.command_id);
       commands = commands.filter(c => c.command_id !== cmd.command_id);
       toast.success(`${getUsage(cmd)} deleted`, { duration: 2000 });
+    } catch (e) {
+      toast.error('Failed to delete command', { description: e instanceof Error ? e.message : String(e), duration: 4000 });
     } finally {
       deletingId = null;
       commandToDelete = null;
@@ -370,21 +341,14 @@
       ...(overrideForm.allow_bots !== null && { allow_bots: overrideForm.allow_bots }),
     };
     try {
-      const res = await fetchBackend<CommandSettings>('channel/command-settings', {
-        method: 'PUT',
-        auth: true,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.errors?.length) {
-        toast.error('Failed to save override', { description: res.errors[0].message, duration: 4000 });
-        return;
-      }
+      await updateCommandSettings(payload);
       overrides = isNew
         ? [...overrides, payload]
         : overrides.map(o => o.command === editingOverrideCommand ? payload : o);
       toast.success(`"${payload.command}" override ${isNew ? 'created' : 'updated'}`, { duration: 2000 });
       overrideDialogOpen = false;
+    } catch (e) {
+      toast.error('Failed to save override', { description: e instanceof Error ? e.message : String(e), duration: 4000 });
     } finally {
       savingOverride = false;
     }
@@ -393,17 +357,11 @@
   const resetOverride = async (commandName: string) => {
     resettingCommand = commandName;
     try {
-      const res = await fetchBackend('channel/command-settings', {
-        method: 'DELETE',
-        auth: true,
-        params: { id: channelId, command: commandName },
-      });
-      if (res.errors?.length) {
-        toast.error('Failed to reset override', { description: res.errors[0].message, duration: 4000 });
-        return;
-      }
+      await deleteCommandSettings(channelId, commandName);
       overrides = overrides.filter(o => o.command !== commandName);
       toast.success(`"${commandName}" reset to defaults`, { duration: 2000 });
+    } catch (e) {
+      toast.error('Failed to reset override', { description: e instanceof Error ? e.message : String(e), duration: 4000 });
     } finally {
       resettingCommand = null;
     }
@@ -430,22 +388,15 @@
 
     togglingCommand = commandName;
     try {
-      const res = await fetchBackend<CommandSettings>('channel/command-settings', {
-        method: 'PUT',
-        auth: true,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.errors?.length) {
-        toast.error('Failed to update command', { description: res.errors[0].message, duration: 4000 });
-        return;
-      }
+      await updateCommandSettings(payload);
       if (existing) {
         overrides = overrides.map(o => o.command === commandName ? { ...o, is_enabled: enabled } : o);
       } else {
         overrides = [...overrides, payload];
       }
       toast.success(`"${commandName}" ${enabled ? 'enabled' : 'disabled'}`, { duration: 2000 });
+    } catch (e) {
+      toast.error('Failed to update command', { description: e instanceof Error ? e.message : String(e), duration: 4000 });
     } finally {
       togglingCommand = null;
     }

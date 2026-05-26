@@ -3,22 +3,18 @@
   import { toast } from 'svelte-sonner';
   import ConnectionItem from './connectionItem.svelte';
   import { conns } from './connections';
-  import { userState, userToken } from '$lib/store/LocalStorage.svelte';
-  import { fetchBackend } from '$lib/utils';
-  import { env } from '$env/dynamic/public';
+  import { userState } from '$lib/store/LocalStorage.svelte';
   import * as AlertDialog from '$lib/components/ui/alert-dialog';
-
-  interface UserConnection {
-    platform: string;
-    username: string;
-    id: string;
-  }
+  import {
+    getUserConnections,
+    getAuthUrl,
+    disconnectPlatform,
+    type UserConnection,
+  } from '$lib/api/users';
 
   let userConnections: UserConnection[] = $state([]);
   let pendingDisconnect: string | null = $state(null);
   let disconnecting = $state(false);
-
-  const apiBase = env.PUBLIC_API_BASE_URL ?? 'https://api.potat.app';
 
   const openWindow = (url: string): void => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -37,32 +33,14 @@
       return;
     }
 
-    if (platform === 'FFZ') {
-      openWindow(`${apiBase}/auth/ffz/authorize`);
-      return;
-    }
-
     try {
-      const res = await fetchBackend<string>(`auth/${platform.toLowerCase()}/authorize`, {
-        auth: true,
+      const url = await getAuthUrl(platform);
+      openWindow(url);
+    } catch (e) {
+      toast.error('Error', {
+        duration: 5000,
+        description: `Failed to connect to ${prettyPlatform}: ${e instanceof Error ? e.message : String(e)}`,
       });
-
-      if (res.errors?.length || !res.data?.[0]) {
-        toast.error('Error', {
-          duration: 5000,
-          description: `Failed to get authorization URL for ${prettyPlatform}`,
-        });
-        return;
-      }
-
-      openWindow(res.data[0]);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error('Error', {
-          duration: 5000,
-          description: `Failed to connect to ${prettyPlatform}: ${error.message}`,
-        });
-      }
     }
   };
 
@@ -75,29 +53,17 @@
     if (!platform) return;
     disconnecting = true;
     try {
-      const res = await fetchBackend(`auth/${platform.toLowerCase()}/disconnect`, {
-        method: 'DELETE',
-        auth: true,
-      });
-      if (res.errors?.length) {
-        toast.error('Error', {
-          duration: 5000,
-          description: `Failed to disconnect from ${platform}: ${res.errors[0].message}`,
-        });
-        return;
-      }
+      await disconnectPlatform(platform);
       userConnections = userConnections.filter(conn => conn.platform !== platform);
       toast.success('Disconnected', {
         duration: 2000,
         description: `Successfully disconnected from ${platform}`,
       });
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error('Error', {
-          duration: 5000,
-          description: `Failed to disconnect from ${platform}: ${error.message}`,
-        });
-      }
+    } catch (e) {
+      toast.error('Error', {
+        duration: 5000,
+        description: `Failed to disconnect from ${platform}: ${e instanceof Error ? e.message : String(e)}`,
+      });
     } finally {
       disconnecting = false;
       pendingDisconnect = null;
@@ -117,20 +83,8 @@
 
   const loadConnections = async (): Promise<UserConnection[]> => {
     const login = $userState?.login;
-    const token = $userToken;
     if (!login) return [];
-
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const connections = await fetch(`${apiBase}/users/${login}`, {
-      method: 'GET',
-      headers,
-    }).then(res => res.json()).then(res => {
-      return res.data[0]?.user?.connections ?? [];
-    });
-
-    return connections;
+    return getUserConnections(login);
   };
 
   const findConn = (platform: string): UserConnection | undefined => {

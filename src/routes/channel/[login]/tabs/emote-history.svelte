@@ -1,39 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { fetchBackend, cn } from '$lib/utils';
+  import { cn } from '$lib/utils';
+  import { getEmoteHistory, type EmoteHistoryEntry, type SimpleChannel } from '$lib/api/emotes';
   import { Skeleton } from '$lib/components/ui/skeleton';
   import SkeletonImage from '$lib/components/skeleton-image/+skeleton-image.svelte';
   import { Input } from '$lib/components/ui/input/index.js';
   import Search from 'lucide-svelte/icons/search';
-
-  interface EmoteHistoryEntry {
-    readonly set_id: string;
-    readonly provider: string;
-    readonly action: string;
-    readonly emote_id: string;
-    readonly emote_name: string;
-    readonly emote_alias: string;
-    readonly emote_new_alias: null;
-    readonly actor: 'potatbotat' | 'external';
-    readonly user_login: string;
-    readonly user_name: string;
-    readonly user_ffz_id: string;
-    readonly user_bttv_id: string;
-    readonly user_stv_id: string;
-    readonly known_bot: boolean;
-    readonly bestUserName: string;
-    readonly set_name: string;
-    readonly user_color: string;
-    readonly ago: string;
-    readonly user_stv_pfp: string;
-    readonly user_pfp: string;
-    readonly emoteURL: string;
-    readonly emoteLink: string;
-    readonly expires_at: string | null;
-    readonly is_expired: boolean;
-    readonly type: string;
-  }
 
   interface ComputedExtras extends EmoteHistoryEntry {
     readonly user_url: string;
@@ -42,18 +15,6 @@
     readonly word: string;
     readonly expiry: string | null;
     readonly expired: boolean;
-  }
-
-  interface SimpleChannel {
-    readonly pfp: string;
-    readonly bestName: string;
-    readonly login: string;
-    readonly name: string;
-  }
-
-  interface HistoryResponse {
-    readonly channel: SimpleChannel;
-    readonly history: EmoteHistoryEntry[];
   }
 
   interface ProviderInfo {
@@ -154,20 +115,17 @@
     if (isLoading) return;
     isLoading = true;
     try {
-      const response = await fetchBackend<HistoryResponse>(`emotes/history/${$page.params.login}`, {
-        params: { limit: 50, after: pagination },
-      });
+      const result = await getEmoteHistory($page.params.login!, { limit: 50, after: pagination ?? undefined });
 
-      const data = response?.data[0];
-      if (!data && history.length === 0) {
+      if (!result.history.length && history.length === 0) {
         none = true;
         return;
       }
 
-      cursor = response.pagination?.hasNextPage ? (response.pagination.cursor ?? null) : null;
-      if (data?.channel) channel = data.channel;
+      cursor = result.cursor;
+      if (result.channel) channel = result.channel;
 
-      for (const update of data?.history ?? []) {
+      for (const update of result.history) {
         const key = `${update.emote_id}:${update.ago}:${update.action}:${update.user_login}`;
         if (seenKeys.has(key)) continue;
         seenKeys.add(key);
