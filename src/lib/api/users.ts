@@ -29,7 +29,7 @@ export const getUserSettings = async (): Promise<Record<string, unknown>> => {
 };
 
 export const updateUserSettings = async (
-  settings: Record<string, unknown>,
+  settings: Record<string, unknown>
 ): Promise<{ ok: boolean; error: string }> => {
   const res = await fetchBackend<Record<string, unknown>>('users/me/settings', {
     method: 'PATCH',
@@ -47,7 +47,7 @@ export const getReminders = async (): Promise<Reminder[]> => {
   const res = await fetchBackend<Reminder>('user/reminders', { auth: true });
   if (res.errors?.length) throw new Error(res.errors[0].message);
   return (res.data ?? []).sort(
-    (a, b) => new Date(a.dateReady).getTime() - new Date(b.dateReady).getTime(),
+    (a, b) => new Date(a.dateReady).getTime() - new Date(b.dateReady).getTime()
   );
 };
 

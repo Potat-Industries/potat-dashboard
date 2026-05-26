@@ -65,7 +65,7 @@ export const getEmoteStats = async (params: {
 
 export const getEmoteHistory = async (
   login: string,
-  params: { limit?: number; after?: string | null },
+  params: { limit?: number; after?: string | null }
 ): Promise<{
   channel: SimpleChannel | null;
   history: EmoteHistoryEntry[];

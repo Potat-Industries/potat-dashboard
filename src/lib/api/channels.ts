@@ -14,7 +14,7 @@ export const getChannelSettings = async (channelId: string): Promise<Record<stri
 
 export const updateChannelSettings = async (
   channelId: string,
-  settings: Record<string, unknown>,
+  settings: Record<string, unknown>
 ): Promise<{ ok: boolean; error: string }> => {
   const res = await fetchBackend<Record<string, unknown>>('channels/me/settings', {
     method: 'PATCH',
@@ -40,7 +40,7 @@ export const getChannelCommands = async (channelId: string): Promise<ChannelComm
 
 export const createChannelCommand = async (
   channelId: string,
-  payload: Record<string, unknown>,
+  payload: Record<string, unknown>
 ): Promise<ChannelCommand | null> => {
   const res = await fetchBackend<ChannelCommand>('channel/commands', {
     method: 'POST',
@@ -55,7 +55,7 @@ export const createChannelCommand = async (
 export const updateChannelCommand = async (
   channelId: string,
   commandId: number,
-  payload: Record<string, unknown>,
+  payload: Record<string, unknown>
 ): Promise<void> => {
   const res = await fetchBackend<ChannelCommand>('channel/commands', {
     method: 'PATCH',
