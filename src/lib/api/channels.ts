@@ -1,4 +1,5 @@
 import { fetchBackend } from '$lib/utils';
+import { env } from '$env/dynamic/public';
 import type { BotCommand, ChannelCommand, CommandSettings } from '$lib/types';
 
 // ── Channel settings ──────────────────────────────────────────────────────────
@@ -79,9 +80,10 @@ export const deleteChannelCommand = async (channelId: string, commandId: number)
 // ── Bot commands & overrides ──────────────────────────────────────────────────
 
 export const getBotCommands = async (): Promise<BotCommand[]> => {
-  const res = await fetchBackend<BotCommand>('help');
-  if (res.errors?.length) throw new Error(res.errors[0].message);
-  return res.data ?? [];
+  const apiBase = env.PUBLIC_API_BASE_URL ?? 'https://api.potat.app';
+  const res = await fetch(`${apiBase}/help`);
+  if (!res.ok) throw new Error(`Failed to fetch bot commands: ${res.status}`);
+  return res.json() as Promise<BotCommand[]>;
 };
 
 export const getCommandSettings = async (channelId: string): Promise<CommandSettings[]> => {

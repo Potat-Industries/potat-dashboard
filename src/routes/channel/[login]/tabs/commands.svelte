@@ -717,7 +717,11 @@
                   <TableRow>
                     <TableCell class="font-mono text-sm text-primary">{cmd.name}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" class="text-xs capitalize">{cmd.category}</Badge>
+                      {#if cmd.category}
+                        <Badge variant="outline" class="text-xs capitalize">{cmd.category}</Badge>
+                      {:else}
+                        <span class="text-muted-foreground">—</span>
+                      {/if}
                     </TableCell>
                     <TableCell class="text-sm text-muted-foreground">{cmd.cooldown}s</TableCell>
                     <TableCell>

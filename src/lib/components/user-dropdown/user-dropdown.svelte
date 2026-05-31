@@ -14,15 +14,22 @@
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import { toast } from 'svelte-sonner';
   import { setMode, toggleMode } from 'mode-watcher';
-  import { userState, userToken } from '$lib/store/LocalStorage.svelte';
+  import { userState } from '$lib/store/LocalStorage.svelte';
   import LoginPopup from '$lib/components/login-popup/+login-popup.svelte';
   import { goto } from '$app/navigation';
+  import { env } from '$env/dynamic/public';
 
-  let loggedIn = $derived(!!$userToken);
+  let loggedIn = $derived(!!$userState);
 
-  let onLogout = (): void => {
-    console.log('Logged out');
-    userToken.set(null);
+  let onLogout = async (): Promise<void> => {
+    try {
+      await fetch(`${env.PUBLIC_API_BASE_URL ?? 'https://api.potat.app'}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // non-fatal
+    }
     userState.set(null);
     toast.success('Logged out', {
       duration: 2000,
@@ -86,7 +93,7 @@
 
         <DropdownMenu.Separator />
 
-        <DropdownMenu.Item on:click={()=>openPage(`user/${$userState?.login ?? ''}`)}>
+        <DropdownMenu.Item on:click={()=>goto(`/dashboard/channel/${$userState?.login ?? ''}#settings`)}>
           <Settings class="mr-2 h-4 w-4" />
           <span>User Settings</span>
         </DropdownMenu.Item>

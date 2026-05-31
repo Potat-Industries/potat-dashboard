@@ -3,7 +3,7 @@
   import { toast } from 'svelte-sonner';
   import ConnectionItem from './connectionItem.svelte';
   import { conns } from './connections';
-  import { userState, userToken } from '$lib/store/LocalStorage.svelte';
+  import { userState } from '$lib/store/LocalStorage.svelte';
   import { fetchBackend } from '$lib/utils';
   import { env } from '$env/dynamic/public';
 
@@ -90,15 +90,12 @@
 
   const loadConnections = async (): Promise<UserConnection[]> => {
     const login = $userState?.login;
-    const token = $userToken;
     if (!login) return [];
-
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const connections = await fetch(`${apiBase}/users/${login}`, {
       method: 'GET',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
     }).then(res => res.json()).then(res => {
       return res.data[0]?.user?.connections ?? [];
     });

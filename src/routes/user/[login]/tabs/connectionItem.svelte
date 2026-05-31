@@ -43,7 +43,7 @@
       <div><b>{platform.name}</b></div>
       {#if userConnection && userConnection.username}
         <div>
-          <p class="text-sm" style="color #6b7280">Connected as {userConnection.username}</p>
+          <p class="text-sm" style="color: #6b7280">Connected as {userConnection.username}</p>
         </div>
       {/if}
     </div>

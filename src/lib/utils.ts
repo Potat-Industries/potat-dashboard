@@ -2,8 +2,6 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
-import { userToken } from '$lib/store/LocalStorage.svelte';
-import { get } from 'svelte/store';
 import { env } from '$env/dynamic/public';
 
 export function cn(...inputs: ClassValue[]) {
@@ -113,10 +111,7 @@ export const makeRequest = async <T = unknown>(
 	}
 
 	if (options?.auth) {
-		options.headers = {
-			...options.headers,
-			authorization: `Bearer ${get(userToken)}`,
-		};
+		options.credentials = 'include';
 	}
 
 	const response = await fetch(url, options);

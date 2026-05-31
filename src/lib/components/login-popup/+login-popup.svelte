@@ -2,13 +2,12 @@
   import { browser } from '$app/environment';
   import * as AlertDialog from '$lib/components/ui/alert-dialog';
   import { Button } from '$lib/components/ui/button/index.js';
-  import { userState, userToken } from '$lib/store/LocalStorage.svelte';
+  import { userState } from '$lib/store/LocalStorage.svelte';
   import { env } from '$env/dynamic/public';
   import { onMount, onDestroy } from 'svelte';
   import { toast } from 'svelte-sonner';
 
   type LoginPayload = {
-    token: string;
     id: string;
     login: string;
     name: string;
@@ -28,7 +27,7 @@
     }
 
     const payload = value as Record<string, unknown>;
-    return typeof payload.token === 'string' && typeof payload.id === 'string';
+    return typeof payload.id === 'string' && typeof payload.login === 'string';
   };
 
   const resolveLoginUrl = (): string => {
@@ -82,9 +81,8 @@
       return;
     }
 
-    const { id, login, name, stv_id, token, is_channel, pfp } = event.data;
+    const { id, login, name, stv_id, is_channel, pfp } = event.data;
 
-    userToken.set(token);
     userState.set({
       id,
       login,
