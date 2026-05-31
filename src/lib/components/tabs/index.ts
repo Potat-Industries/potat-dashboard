@@ -5,4 +5,6 @@ export interface TabConfig {
   label: string;
   icon: ComponentType;
   component: Component;
+  /** If true, tab is only shown when the logged in user is viewing their own page */
+  ownerOnly?: boolean;
 }

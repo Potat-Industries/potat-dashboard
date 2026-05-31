@@ -9,18 +9,26 @@
   import type { TabConfig } from '.';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { userState } from '$lib/store/LocalStorage.svelte';
 
   let { tabs }: { tabs: TabConfig[] } = $props();
 
   let sidebarExpanded: boolean = $state(false);
   let activeTab: string | undefined = $state(undefined);
 
+  const isOwner = $derived(
+    !$page.params.login ||
+    $page.params.login.toLowerCase() === ($userState?.login ?? '').toLowerCase()
+  );
+
+  const visibleTabs = $derived(tabs.filter(t => !t.ownerOnly || isOwner));
+
   $effect(() => {
     const h = $page.url.hash.replace('#', '');
-    if (h && tabs.some(t => t.id === h)) {
+    if (h && visibleTabs.some(t => t.id === h)) {
       activeTab = h;
     } else {
-      activeTab = tabs[0]?.id;
+      activeTab = visibleTabs[0]?.id;
     }
   });
 
@@ -87,7 +95,7 @@
       </Button>
     </div>
     <nav class="grid gap-1 p-2">
-      {#each tabs as tab (tab.id)}
+      {#each visibleTabs as tab (tab.id)}
         <Tooltip.Root>
           <Tooltip.Trigger asChild let:builder>
             <span>
@@ -130,12 +138,10 @@
     <div class="flex flex-col">
       <main class="flex-1 overflow-auto p-4">
         <Tabs bind:value={activeTab} on:change={(e) => handleTabChange(e.detail.value)}>
-          {#each tabs as tab (tab.id)}
+          {#each visibleTabs as tab (tab.id)}
             <TabsContent value={tab.id}>
-              {#if tab.component}
-                {#key tab.id}
-                  <tab.component />
-                {/key}
+              {#if tab.component && activeTab === tab.id}
+                <tab.component />
               {/if}
             </TabsContent>
           {/each}

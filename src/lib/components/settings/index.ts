@@ -1,4 +1,4 @@
-import type langauges from '$lib/langauges';
+import languages from '$lib/languages';
 
 export type UserRequires =
 | 'NONE'
@@ -19,7 +19,7 @@ export interface ChannelSettings {
   offline_only: boolean;
   whisper_only: boolean;
   online_whisper_only?: boolean;
-  language: (typeof langauges)[number];
+  language: (typeof languages)[number];
   channel_cooldown: number | null;
   user_cooldown: number | null;
   force_language: boolean;

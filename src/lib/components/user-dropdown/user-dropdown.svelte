@@ -3,6 +3,7 @@
   import LogOut from 'lucide-svelte/icons/log-out';
   import Lock from 'lucide-svelte/icons/lock';
   import Handshake from 'lucide-svelte/icons/handshake';
+  import MessageCircle from 'lucide-svelte/icons/message-circle';
   import SunMoon from 'lucide-svelte/icons/sun-moon';
   import Settings from 'lucide-svelte/icons/settings';
   import * as Avatar from '$lib/components/ui/avatar';
@@ -13,15 +14,22 @@
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import { toast } from 'svelte-sonner';
   import { setMode, toggleMode } from 'mode-watcher';
-  import { userState, userToken } from '$lib/store/LocalStorage.svelte';
+  import { userState } from '$lib/store/LocalStorage.svelte';
   import LoginPopup from '$lib/components/login-popup/+login-popup.svelte';
   import { goto } from '$app/navigation';
+  import { env } from '$env/dynamic/public';
 
-  let loggedIn = $derived(!!$userToken);
+  let loggedIn = $derived(!!$userState);
 
-  let onLogout = (): void => {
-    console.log('Logged out');
-    userToken.set(null);
+  let onLogout = async (): Promise<void> => {
+    try {
+      await fetch(`${env.PUBLIC_API_BASE_URL ?? 'https://api.potat.app'}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // non-fatal
+    }
     userState.set(null);
     toast.success('Logged out', {
       duration: 2000,
@@ -34,11 +42,8 @@
     goto(`/dashboard/${page}`);
   };
 
-  // mock
-  let user = {
-    pfp: 'https://cdn.7tv.app/user/01G6HF7Y9R000AE6YXS14X580S/profile-picture/01H6MCAQ7G000EBVZZZ8Y7EDPR/3x.avif',
-    login: 'RyanPotat',
-  };
+  let userPfp = $derived($userState?.pfp ?? null);
+  let userLogin = $derived($userState?.name ?? $userState?.login ?? '');
 </script>
 
 <div>
@@ -53,12 +58,12 @@
           builders={[builder]}
         >
           <Avatar.Root class="h-6 w-6">
-            <Avatar.Image src={user.pfp} alt="User avatar" />
+            <Avatar.Image src={userPfp} alt="User avatar" />
             <Avatar.Fallback>
               <img src=/dashboard/default-pfp.png alt="Default avatar"/>
             </Avatar.Fallback>
           </Avatar.Root>
-          <span class="leading-none">{user.login}</span>
+          <span class="leading-none">{userLogin}</span>
           <ChevronDown class="size-4" />
         </Button>
       </DropdownMenu.Trigger>
@@ -88,7 +93,7 @@
 
         <DropdownMenu.Separator />
 
-        <DropdownMenu.Item on:click={()=>openPage(`user/${$userState?.login ?? ''}`)}>
+        <DropdownMenu.Item on:click={()=>goto(`/dashboard/channel/${$userState?.login ?? ''}#settings`)}>
           <Settings class="mr-2 h-4 w-4" />
           <span>User Settings</span>
         </DropdownMenu.Item>
@@ -104,7 +109,7 @@
           <span>Terms of Service</span>
         </DropdownMenu.Item>
         <DropdownMenu.Item on:click={()=>openPage('contact')}>
-          <Handshake class="mr-2 h-4 w-4" />
+          <MessageCircle class="mr-2 h-4 w-4" />
           <span>Contact</span>
         </DropdownMenu.Item>
 

@@ -1,38 +1,12 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { fetchBackend } from '$lib/utils';
-  import { browser } from '$app/environment';
+  import { cn } from '$lib/utils';
+  import { getEmoteHistory, type EmoteHistoryEntry, type SimpleChannel } from '$lib/api/emotes';
   import { Skeleton } from '$lib/components/ui/skeleton';
   import SkeletonImage from '$lib/components/skeleton-image/+skeleton-image.svelte';
-
-  interface EmoteHistoryEntry {
-    readonly set_id: string;
-    readonly provider: string;
-    readonly action: string;
-    readonly emote_id: string;
-    readonly emote_name: string;
-    readonly emote_alias: string;
-    readonly emote_new_alias: null;
-    readonly actor: 'potatbotat' | 'external';
-    readonly user_login: string;
-    readonly user_name: string;
-    readonly user_ffz_id: string;
-    readonly user_bttv_id: string;
-    readonly user_stv_id: string;
-    readonly known_bot: boolean;
-    readonly bestUserName: string;
-    readonly set_name: string;
-    readonly user_color: string;
-    readonly ago: string;
-    readonly user_stv_pfp: string;
-    readonly user_pfp: string;
-    readonly emoteURL: string;
-    readonly emoteLink: string;
-    readonly expires_at: string | null;
-    readonly is_expired: boolean;
-    readonly type: string;
-  }
+  import { Input } from '$lib/components/ui/input/index.js';
+  import Search from 'lucide-svelte/icons/search';
 
   interface ComputedExtras extends EmoteHistoryEntry {
     readonly user_url: string;
@@ -40,18 +14,7 @@
     readonly method: string;
     readonly word: string;
     readonly expiry: string | null;
-  }
-
-  interface SimpleChannel {
-    readonly pfp: string;
-    readonly bestName: string;
-    readonly login: string;
-    readonly name: string;
-  }
-
-  interface HistoryResponse {
-    readonly channel: SimpleChannel;
-    readonly history: EmoteHistoryEntry[];
+    readonly expired: boolean;
   }
 
   interface ProviderInfo {
@@ -83,52 +46,95 @@
     },
   };
 
-  let observer: IntersectionObserver;
+  const ACTION_OPTIONS = [
+    { value: '', label: 'All' },
+    { value: 'ADD', label: 'Added' },
+    { value: 'REMOVE', label: 'Removed' },
+    { value: 'ALIAS', label: 'Renamed' },
+  ];
+
+  const PROVIDER_OPTIONS = [
+    { value: 'STV', label: '7TV' },
+    { value: 'BTTV', label: 'BTTV' },
+    { value: 'FFZ', label: 'FFZ' },
+  ];
+
   let loaded = $state(false);
   let isLoading = $state(false);
   let none = $state(false);
   let history: ComputedExtras[] = $state([]);
   let cursor: string | null = $state(null);
-  const loadedEmotes = $state(new Map());
-  let channel: SimpleChannel = $state({
-    pfp: '',
-    bestName: '',
-    login: '',
-    name: '',
-  });
+  const seenKeys = new Set<string>();
+  let channel = $state<SimpleChannel>({ pfp: '', bestName: '', login: '', name: '' });
+  let resolvedSetNames = $state<Record<string, string>>({});
+  const fetchingSetIds = new Set<string>();
+
+  async function resolveSetName(setId: string): Promise<void> {
+    if (!setId || fetchingSetIds.has(setId) || resolvedSetNames[setId]) return;
+    fetchingSetIds.add(setId);
+    try {
+      const res = await fetch(`https://7tv.io/v3/emote-sets/${setId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.name) resolvedSetNames = { ...resolvedSetNames, [setId]: data.name };
+    } catch {
+      // silently fail
+    }
+  }
+
+  let userFilter = $state('');
+  let emoteFilter = $state('');
+  let actionFilter = $state('');
+  let providerFilter = $state('');
+
+  let sentinel = $state<HTMLDivElement | undefined>(undefined);
+
+  const displayHistory = $derived(
+    history.filter(e => {
+      if (userFilter) {
+        const q = userFilter.toLowerCase();
+        if (!e.user_name.toLowerCase().includes(q) && !e.user_login.toLowerCase().includes(q)) return false;
+      }
+      if (emoteFilter) {
+        const q = emoteFilter.toLowerCase();
+        const names = [e.emote_name, e.emote_alias, e.emote_new_alias].filter(Boolean) as string[];
+        if (!names.some(n => n.toLowerCase().includes(q))) return false;
+      }
+      if (actionFilter && e.action !== actionFilter) return false;
+      if (providerFilter) {
+        const match = providerFilter === 'STV' ? ['STV', '7TV'] : [providerFilter];
+        if (!match.includes(e.provider)) return false;
+      }
+      return true;
+    })
+  );
+
+  const hasActiveFilter = $derived(!!userFilter || !!emoteFilter || !!actionFilter || !!providerFilter);
 
   async function fetchEmoteHistory(pagination?: string | null) {
-    if (isLoading) {
-      return;
-    }
-
+    if (isLoading) return;
     isLoading = true;
     try {
-      const response = await fetchBackend<HistoryResponse>(`emotes/history/${$page.params.login}`, {
-        params: { limit: 50, after: pagination },
-      });
+      const result = await getEmoteHistory($page.params.login!, { limit: 50, after: pagination ?? undefined });
 
-      const data = response?.data[0];
-      if (!data && history.length === 0) {
+      if (!result.history.length && history.length === 0) {
         none = true;
-
         return;
       }
 
-      if (response.pagination?.hasNextPage) {
-        cursor = response?.pagination?.cursor;
-      }
+      cursor = result.cursor;
+      if (result.channel) channel = result.channel;
 
-      channel = data.channel;
+      for (const update of result.history) {
+        const key = `${update.emote_id}:${update.ago}:${update.action}:${update.user_login}`;
+        if (seenKeys.has(key)) continue;
+        seenKeys.add(key);
 
-      const computedHistory = data.history.map(update => {
-        let userPfp = update.user_stv_pfp || update.user_pfp;
+        const prov = update.provider;
         let user_url = '';
         let set_url = '';
         let method = '';
         let word = '';
-        let expiry = null;
-        let expired = null;
 
         if (update.action === 'ALIAS') {
           method = `renamed ${update.emote_name} to `;
@@ -141,40 +147,31 @@
           word = 'from';
         }
 
-        if (update.provider === '7TV' || update.provider === 'STV') {
+        if (prov === '7TV' || prov === 'STV') {
           user_url = `https://7tv.app/users/${update.user_stv_id}`;
-          set_url = `https://7tv.app/emote-sets/${update.set_id}`;
-        } else if (update.provider === 'BTTV') {
+          set_url  = `https://7tv.app/emote-sets/${update.set_id}`;
+        } else if (prov === 'BTTV') {
           user_url = `https://betterttv.com/users/${update.user_bttv_id}`;
-          set_url = `https://betterttv.com/users/${update.set_id}`;
-        } else if (update.provider === 'FFZ') {
+          set_url  = `https://betterttv.com/users/${update.set_id}`;
+        } else if (prov === 'FFZ') {
           user_url = `https://www.frankerfacez.com/channel/${update.user_login}`;
-          set_url = `https://www.frankerfacez.com/channel/${channel.login}`;
+          set_url  = `https://www.frankerfacez.com/channel/${channel.login}`;
         }
 
-        if (update.expires_at) {
-          expiry = update.expires_at;
-          expired = update.is_expired ?? false;
-        }
-
-        return {
+        const entry: ComputedExtras = {
           ...update,
-          user_pfp: userPfp,
+          user_pfp: update.user_stv_pfp || update.user_pfp,
           user_url,
           set_url,
           method,
           word,
-          expiry,
-          expired,
+          expiry:  update.expires_at ?? null,
+          expired: update.is_expired ?? false,
         };
-      });
+        history.push(entry);
 
-      for (const update of computedHistory) {
-        if (!update) continue;
-        const key = `${update.emote_id}:${update.ago}:${update.action}:${update.user_login}`;
-        if (!loadedEmotes.get(key)) {
-          history.push(update);
-          loadedEmotes.set(key, update);
+        if ((!update.set_name || update.set_name.toLowerCase() === 'unknown') && (prov === '7TV' || prov === 'STV')) {
+          resolveSetName(update.set_id);
         }
       }
     } catch (err) {
@@ -185,59 +182,67 @@
     }
   }
 
-  const handleScroll = () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
-      if (!cursor) return;
-      fetchEmoteHistory(cursor);
-    }
-  };
-
-  const observeImages = () => {
-    const options = { rootMargin: '0px', threshold: 0.1 };
-    observer = new IntersectionObserver((entries, observer) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          const img = entry.target as HTMLImageElement;
-          img.src = img.dataset.src!;
-          observer.unobserve(img);
+  $effect(() => {
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !isLoading && cursor) {
+          fetchEmoteHistory(cursor);
         }
-      }
-    }, options);
-
-    document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
-  };
-
-  onMount(() => {
-    fetchEmoteHistory();
-    if (browser) {
-      observeImages();
-      addEventListener('scroll', handleScroll);
-    }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   });
 
-  onDestroy(() => {
-    if (browser) {
-      removeEventListener('scroll', handleScroll);
-    }
-  });
+  onMount(() => { fetchEmoteHistory(); });
 </script>
 
-<div class="flex justify-center">
-  <form class="w-full max-w-5xl p-10">
-    <fieldset class="space-y-8 rounded-lg border p-6" style="box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3)">
-      <legend class="px-2 text-xl font-semibold">Emote Actions In {$page.params.login}</legend>
-        {#if loaded && !none}
-        <div id="container">
-          <ul class="emote-list">
-            {#each history as update (update.emote_id + update.ago + update.action + update.user_login)}
+<div class="flex justify-center px-4 py-6">
+  <fieldset class="w-full max-w-5xl space-y-4 rounded-lg border p-6">
+    <legend class="px-2 text-xl font-semibold">Emote Actions In {$page.params.login}</legend>
+
+    <!-- Filter bar -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+      <div class="relative min-w-[140px] flex-1">
+        <Search class="pointer-events-none absolute left-2.5 top-2 size-4 text-muted-foreground" />
+        <Input class="h-8 pl-8 text-sm" placeholder="Filter by user..." bind:value={userFilter} />
+      </div>
+      <div class="relative min-w-[140px] flex-1">
+        <Search class="pointer-events-none absolute left-2.5 top-2 size-4 text-muted-foreground" />
+        <Input class="h-8 pl-8 text-sm" placeholder="Filter by emote..." bind:value={emoteFilter} />
+      </div>
+      <div class="flex gap-1">
+        {#each ACTION_OPTIONS as opt}
+          <button
+            class={cn('rounded-md border px-2.5 py-1 text-xs transition-colors', actionFilter === opt.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted')}
+            onclick={() => { actionFilter = opt.value; }}
+          >{opt.label}</button>
+        {/each}
+      </div>
+      <div class="flex gap-1">
+        {#each PROVIDER_OPTIONS as opt}
+          <button
+            class={cn('rounded-md border px-2.5 py-1 text-xs transition-colors', providerFilter === opt.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-muted')}
+            onclick={() => { providerFilter = providerFilter === opt.value ? '' : opt.value; }}
+          >{opt.label}</button>
+        {/each}
+      </div>
+    </div>
+
+    {#if loaded && !none}
+      <div id="container">
+        <ul class="emote-list">
+            {#each displayHistory as update (update.emote_id + update.ago + update.action + update.user_login)}
               <li class="emote-item flex gap-2">
                 <div class="logo-container">
                   <SkeletonImage
                     class="h-10 max-h-10 max-w-10 rounded-full aspect-square"
-                    src={providers[update.provider].logo}
-                    alt={`${providers[update.provider].name} logo`}
-                    title={providers[update.provider].name}
-                    href={providers[update.provider].home}
+                    src={providers[update.provider]?.logo ?? ''}
+                    alt={`${providers[update.provider]?.name ?? update.provider} logo`}
+                    title={providers[update.provider]?.name ?? update.provider}
+                    href={providers[update.provider]?.home ?? '#'}
                   />
                 </div>
                 <div class="content-container flex items-center gap-2">
@@ -261,7 +266,7 @@
                       <span class="actor-icon" title={`Temporary emote has expired after ${update.expires_at}`}>💥</span>
                     {/if}
 
-                    <a href={update.user_url} target="_blank">
+                    <a href={update.user_url} target="_blank" rel="noreferrer">
                       <strong class="font-bold" style={`color: ${update.user_color}`}>{update.user_name}</strong>
                     </a>
                     {update.method}
@@ -274,8 +279,8 @@
                     />
                     {update.emote_new_alias || update.emote_alias || update.emote_name}
                     {update.word} set
-                    <a href={update.set_url} target="_blank">
-                      <em>"{update.set_name}"</em>
+                    <a href={update.set_url} target="_blank" rel="noreferrer">
+                      <em>"{resolvedSetNames[update.set_id] || update.set_name}"</em>
                     </a>
                   </div>
                 </div>
@@ -287,18 +292,16 @@
               </li>
             {/each}
 
-            {#if isLoading }
+            {#if isLoading}
               <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-              {#each Array(10) as _, i (i)}
+              {#each Array(5) as _, i (i)}
                 <li class="emote-item flex gap-2 animate-pulse">
                   <div class="logo-container">
                     <Skeleton class="w-10 h-10 rounded-full" />
                   </div>
                   <div class="content-container flex items-center gap-2">
                     <Skeleton class="w-10 h-10 rounded-full" />
-                    <div class="flex flex-col gap-1">
-                      <Skeleton class="block h-8 w-60! align-middle !rounded-none" />
-                    </div>
+                    <Skeleton class="h-8 w-60 rounded" />
                   </div>
                   <div class="ago-container items-center justify-center">
                     <Skeleton class="w-20 h-6 rounded" />
@@ -307,7 +310,24 @@
               {/each}
             {/if}
           </ul>
+
+          {#if displayHistory.length === 0 && hasActiveFilter}
+            <p class="py-6 text-center text-sm text-muted-foreground">No results match your filters.</p>
+          {/if}
         </div>
+
+        <!-- Sentinel triggers next-page fetch when scrolled into view -->
+        <div bind:this={sentinel} class="h-2"></div>
+
+        {#if !cursor && !isLoading && history.length > 0}
+          <p class="pt-2 text-center text-xs text-muted-foreground">All {history.length} entries loaded.</p>
+        {/if}
+
+      {:else if none}
+        <p class="text-muted-foreground text-sm py-4">
+          No emote history found for <strong>{$page.params.login}</strong>.
+          This channel may not have PotatBotat or may not have any tracked emote changes yet.
+        </p>
       {:else}
         <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
         {#each Array(10) as _, i (i)}
@@ -317,9 +337,7 @@
             </div>
             <div class="content-container flex items-center gap-2">
               <Skeleton class="w-10 h-10 rounded-full" />
-              <div class="flex flex-col gap-1">
-                <Skeleton class="block h-8 w-60! align-middle !rounded-none" />
-              </div>
+              <Skeleton class="h-8 w-60 rounded" />
             </div>
             <div class="ago-container items-center justify-center">
               <Skeleton class="w-20 h-6 rounded" />
@@ -327,8 +345,7 @@
           </li>
         {/each}
       {/if}
-    </fieldset>
-  </form>
+  </fieldset>
 </div>
 
 <style scoped>

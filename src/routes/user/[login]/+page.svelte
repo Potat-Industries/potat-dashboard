@@ -1,6 +1,9 @@
 <script lang="ts">
-  import Tabs from '$lib/components/tabs/+tabs.svelte';
-  import { tabs } from './tabs';
-</script>
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { onMount } from 'svelte';
 
-<Tabs tabs={tabs}/>
+  onMount(() => {
+    goto(`/dashboard/channel/${$page.params.login}`, { replaceState: true });
+  });
+</script>
