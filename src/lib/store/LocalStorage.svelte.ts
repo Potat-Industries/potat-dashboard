@@ -52,4 +52,3 @@ function createLocalStorageStore<T>(key: string, initialValue: T) {
 }
 
 export const userState = createLocalStorageStore<UserState | null>(Storage.UserState, null);
-
