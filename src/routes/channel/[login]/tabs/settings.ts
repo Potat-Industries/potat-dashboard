@@ -84,7 +84,7 @@ export const channelSettingDefaults: Setting[] = [
     type: 'choice',
     description: 'The language the bot will use to communicate with users in your channel.',
     possibleValues: languages,
-    defaults: ['English', 'Portuguese', 'Spanish', 'German', 'Russian"'],
+    defaults: ['English', 'Portuguese', 'Spanish', 'German', 'Russian'],
   },
   {
     id: 'force_language',

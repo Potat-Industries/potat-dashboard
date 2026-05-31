@@ -134,7 +134,7 @@
       <TableBody>
         {#if isLoading}
           <TableRow>
-            <TableCell colspan={5}>Loading Reminders...</TableCell>
+            <TableCell colspan={7}>Loading Reminders...</TableCell>
           </TableRow>
         {:else if reminders.length === 0}
           <TableRow>

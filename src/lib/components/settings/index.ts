@@ -1,4 +1,4 @@
-import type languages from '$lib/languages';
+import languages from '$lib/languages';
 
 export type UserRequires =
 | 'NONE'
