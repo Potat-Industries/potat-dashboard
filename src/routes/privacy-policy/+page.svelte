@@ -34,10 +34,13 @@
       <h2>7. Your Rights and Choices</h2>
       <p>Users have the right to request access to their data, request deletion, or review the information stored about them. You can exercise these rights by contacting us at privacy@potat.app.</p>
 
-      <h2>8. Updates to This Policy</h2>
+      <h2>8. Opting Out</h2>
+      <p>Users may opt out of chat logs being collected from them by going to <a href="https://logs.potat.app/?optout=" target="_blank" rel="noopener noreferrer">our rustlog instance</a> and opting out with the command given and once opted out, all existing logs will be deleted. Opting out is permanent and cannot be reversed.</p>
+
+      <h2>9. Updates to This Policy</h2>
       <p>We reserve the right to update or modify this Privacy Policy at any time. Any changes will be reflected on this page, and the date of the most recent update will be provided at the top of this policy.</p>
 
-      <h2>9. Contact Information</h2>
+      <h2>10. Contact Information</h2>
       <p>If you have any questions or concerns regarding this Privacy Policy, please contact us at privacy@potat.app.</p>
     </fieldset>
   </form>
