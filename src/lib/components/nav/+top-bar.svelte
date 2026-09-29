@@ -1,9 +1,8 @@
 <script lang="ts">
   import Dropdown from '$lib/components/user-dropdown/user-dropdown.svelte';
-  import { CircleAlert, X } from 'lucide-svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
-  import * as Alert from '$lib/components/ui/alert';
+
   // TODO: $types?
   import type { ChannelPartial } from '../../../routes/+layout';
   import { userState } from '$lib/store/LocalStorage.svelte';
@@ -12,7 +11,6 @@
 
   let { channels }: { channels: ChannelPartial[] } = $props();
 
-  let show = $state(true);
   let searchQuery: string = $state('');
   let openPopup = $state(false);
 
@@ -49,16 +47,14 @@
 
 <nav>
   <div class="left-section">
-    <Button variant="outline">
-      <a href="/dashboard/">PotatBotat</a>
-    </Button>
-    <Button variant="outline" onclick={handleClickington}>
-      {#if $userState?.login}
-        <a href="/dashboard/channel/{$userState?.login ?? ''}">My Channel</a>
-      {:else}
-        My channel
-      {/if}
-    </Button>
+    <Button variant="outline" href="/dashboard/">PotatBotat</Button>
+    {#if $userState?.login}
+      <Button variant="outline" href="/dashboard/channel/{$userState.login}">My Channel</Button>
+    {:else}
+      <Button variant="outline" on:click={handleClickington}>My Channel</Button>
+    {/if}
+    <Button variant="outline" href="/dashboard/docs">Docs</Button>
+    <Button variant="outline" href="/dashboard/faq">FAQ</Button>
   </div>
   <div class="search-container">
     <Input
@@ -89,25 +85,6 @@
   </div>
 </nav>
 
-{#if show}
-  <Alert.Root
-    variant="warning"
-    class="relative items-center justify-between p-4"
-  >
-    <CircleAlert class="h-4 w-4" />
-    <Alert.Description>
-      This website is currently in beta and nothing is functional. Stay tuned for poggers happy funtime features!
-    </Alert.Description>
-    <Button
-      variant="ghost"
-      class="absolute right-2 top-1/2 transform -translate-y-1/2 text-yellow-900 dark:text-yellow-100 hover:opacity-70"
-      on:click={() => (show = false)}
-    >
-      <X class="w-4 h-4" />
-    </Button>
-  </Alert.Root>
-{/if}
-
 {#if openPopup}
   <LoginPopup bind:open={openPopup} empty={true} />
 {/if}
@@ -130,17 +107,6 @@
     display: flex;
     gap: 8px;
     align-items: center;
-  }
-
-  a {
-    color: hsl(var(--foreground));
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-  }
-
-  a:hover {
-    color: hsl(var(--primary));
   }
 
   .search-container {

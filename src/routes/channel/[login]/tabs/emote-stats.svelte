@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { EmoteMetricUse } from '$lib/types';
-  import { fetchBackend } from '$lib/utils';
+  import { getEmoteStats } from '$lib/api/emotes';
   import { page } from '$app/stores';
-  import { browser } from '$app/environment';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { Skeleton } from '$lib/components/ui/skeleton';
   import SkeletonImage from '$lib/components/skeleton-image/+skeleton-image.svelte';
   import * as Select from '$lib/components/ui/select/index.js';
@@ -46,15 +45,15 @@
     },
   };
 
-  let observer: IntersectionObserver;
   let isLoading = $state(false);
+  let loaded = $state(false);
   let order = $state<Selected<Order>>({ value: 'desc' });
   let period = $state<Selected<Period>>({ value: 'all' });
   let selectedProvider = $state<Selected<string>>({ value: 'all' });
   let history: EmoteMetricUse[] = $state([]);
   let cursor: string | null = $state(null);
 
-  const loadedEmotes = $state(new Map());
+  const seenKeys = new Map<string, true>();
 
   const periods = [
     { value: 'hour', label: 'Last Hour' },
@@ -74,321 +73,194 @@
     label: provider.name,
   }));
 
+  let sentinel = $state<HTMLDivElement | undefined>(undefined);
+
   const fetchEmoteStats = async (): Promise<void> => {
-    if (isLoading) {
-      return;
-    }
-
+    if (isLoading) return;
     isLoading = true;
-
     try {
-      const response = await fetchBackend<EmoteMetricUse>('emotes/stats', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        params: {
-          login: $page.params.login,
-          order: order.value,
-          period: period.value,
-          provider: selectedProvider.value,
-          after: cursor,
-        },
+      const result = await getEmoteStats({
+        login: $page.params.login!,
+        order: order.value,
+        period: period.value,
+        provider: selectedProvider.value,
+        after: cursor ?? undefined,
       });
 
-      for (const update of response.data) {
-        if (!update) {
-          continue;
-        }
+      for (const update of result.data) {
+        if (!update) continue;
         const key = `${update.emote_id}:${update.emote_name}:${update.provider}`;
-        if (!loadedEmotes.get(key)) {
+        if (!seenKeys.has(key)) {
           history.push(update);
-          loadedEmotes.set(key, update);
+          seenKeys.set(key, true);
         }
       }
 
-      cursor = response.pagination?.cursor || null;
+      cursor = result.cursor;
     } catch (error) {
       console.error('Error fetching emote stats:', error);
     } finally {
+      loaded = true;
       isLoading = false;
     }
   };
 
-  const handleScroll = () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
-      if (!cursor) {
-        return;
-      }
-      fetchEmoteStats();
-    }
-  };
-
-  const observeImages = () => {
-    const options = { rootMargin: '0px', threshold: 0.1 };
-    observer = new IntersectionObserver((entries, observer) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          const img = entry.target as HTMLImageElement;
-          img.src = img.dataset.src!;
-          observer.unobserve(img);
-        }
-      }
-    }, options);
-
-    document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
-  };
-
   const resetAndFetch = () => {
     history = [];
-    loadedEmotes.clear();
+    seenKeys.clear();
     cursor = null;
+    loaded = false;
     fetchEmoteStats();
   };
 
-  onMount(() => {
-    fetchEmoteStats();
-    if (browser) {
-      observeImages();
-      addEventListener('scroll', handleScroll);
-    }
+  $effect(() => {
+    if (!sentinel) return;
+    const io = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !isLoading && cursor) fetchEmoteStats();
+      },
+      { rootMargin: '400px' }
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
   });
 
-  onDestroy(() => {
-    if (browser) {
-      removeEventListener('scroll', handleScroll);
-    }
-  });
+  onMount(() => { fetchEmoteStats(); });
 </script>
 
-<div class="flex justify-center">
-  <form class="max-w-5xl p-10">
-    <fieldset class="space-y-8 rounded-lg border px-6" style="box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3)">
-      <legend class="px-2 text-xl font-semibold">Emote Stats In {$page.params.login}</legend>
+<div class="flex justify-center px-4 py-6">
+  <fieldset class="w-full max-w-3xl space-y-4 rounded-lg border p-6">
+    <legend class="px-2 text-xl font-semibold">Emote Stats In {$page.params.login}</legend>
 
-      <div class="flex justify-between items-center gap-2 mb-4">
-        <div class="w-1/3">
-          <Select.Root
-            bind:selected={period}
-            onSelectedChange={(selected) => {
-              period = { value: selected?.value as Period };
-              resetAndFetch();
-            }}
-          >
-            <Select.Trigger class="w-full h-9 px-3 py-1">
-              <Select.Value placeholder="Time Period" />
-            </Select.Trigger>
-            <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
-              {#each periods as periodOption}
-                <Select.Item value={periodOption.value}>{periodOption.label}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
-
-        <div class="w-1/3">
-          <Select.Root
-            bind:selected={order}
-            onSelectedChange={(selected) => {
-              order = { value: selected?.value as Order };
-              resetAndFetch();
-            }}
-          >
-            <Select.Trigger class="w-full h-9 px-3 py-1">
-              <Select.Value placeholder="Sort Order" />
-            </Select.Trigger>
-            <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
-              {#each orders as orderOption}
-                <Select.Item value={orderOption.value}>{orderOption.label}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
-
-        <div class="w-1/3">
-          <Select.Root
-            bind:selected={selectedProvider}
-            onSelectedChange={(selected) => {
-              selectedProvider = { value: selected?.value as string };
-              resetAndFetch();
-            }}
-          >
-            <Select.Trigger class="w-full h-9 px-3 py-1">
-              <Select.Value placeholder="Provider" />
-            </Select.Trigger>
-            <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
-              <Select.Item value={'all'}>All Providers</Select.Item>
-              <Select.Separator class="border-t my-1" />
-              {#each providerOptions as providerOption}
-                <Select.Item value={providerOption.value}>{providerOption.label}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
-      </div>
-
-      <div id="container">
-        <ul class="emote-list">
-          {#each history as update (update.emote_id + update.provider + update.count)}
-            <li class="emote-item flex gap-2">
-              {#if selectedProvider.value === 'all'}
-                <div class="logo-container">
-                  <SkeletonImage
-                    class="h-10 max-h-10 max-w-10 {update.provider === 'TWITCH' ? 'rounded-none' : 'rounded-full'} aspect-square"
-                    src={providers?.[update.provider]?.logo || `/dashboard/${update.provider.toLowerCase()}-logo.png`}
-                    alt={`${update.provider} logo`}
-                    title={providers[update.provider]?.name || update.provider}
-                    href={providers?.[update.provider]?.home || '#'}
-                  />
-                </div>
-              {/if}
-              <div class="content-container flex items-center gap-2">
-                {#if update.provider !== 'EMOJI'}
-                  <div class="emote-image flex items-center">
-                    <SkeletonImage
-                      class="h-10 w-auto max-w-none"
-                      src={update.url}
-                      alt={`Emote ${update.emote_name}`}
-                      href={update.url}
-                      title={`Emote ${update.emote_name}`}
-                    />
-                  </div>
-                {:else}
-                  <div class="emote-image flex items-center" style="font-size: 2rem;">
-                    {String.fromCodePoint(parseInt(update.emote_id, 16))}
-                  </div>
-                {/if}
-                <div class="text-content">
-                  <strong class="font-bold">{update.provider === 'EMOJI' ? update.emote_name : update.emote_alias || update.emote_name}</strong>
-                  {#if
-                    update.emote_alias &&
-                    update.emote_alias !== update.emote_name &&
-                    update.provider !== 'EMOJI'
-                  }
-                    <span class="text-muted-foreground text-sm">({update.emote_name})</span>
-                  {/if}
-                </div>
-              </div>
-              <div class="ago-container flex items-center justify-center">
-                <div class="text-content">
-                  <span class="text-lg font-bold">{parseInt(update.count).toLocaleString()}</span>
-                  <span class="text-sm text-muted-foreground">uses</span>
-                </div>
-              </div>
-            </li>
+    <!-- Controls -->
+    <div class="flex flex-wrap gap-2 border-b border-border pb-3">
+      <Select.Root
+        bind:selected={period}
+        onSelectedChange={(selected) => {
+          period = { value: selected?.value as Period };
+          resetAndFetch();
+        }}
+      >
+        <Select.Trigger class="h-8 flex-1 min-w-[120px] px-3 py-1 text-sm">
+          <Select.Value placeholder="Time Period" />
+        </Select.Trigger>
+        <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
+          {#each periods as p}
+            <Select.Item value={p.value}>{p.label}</Select.Item>
           {/each}
+        </Select.Content>
+      </Select.Root>
 
-          {#if isLoading}
-            <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-            {#each Array(5) as _, i (i)}
-              <li class="emote-item flex gap-2 animate-pulse">
-                <div class="logo-container">
-                  <Skeleton class="w-10 h-10 rounded-full" />
-                </div>
-                <div class="content-container flex items-center gap-2">
-                  <Skeleton class="h-10 w-10" />
-                  <div class="flex flex-col gap-1">
-                    <Skeleton class="h-4 w-24 rounded" />
-                  </div>
-                </div>
-                <div class="ago-container items-center justify-center">
-                  <Skeleton class="w-12 h-6 rounded" />
-                </div>
-              </li>
-            {/each}
+      <Select.Root
+        bind:selected={order}
+        onSelectedChange={(selected) => {
+          order = { value: selected?.value as Order };
+          resetAndFetch();
+        }}
+      >
+        <Select.Trigger class="h-8 flex-1 min-w-[120px] px-3 py-1 text-sm">
+          <Select.Value placeholder="Sort Order" />
+        </Select.Trigger>
+        <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
+          {#each orders as o}
+            <Select.Item value={o.value}>{o.label}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
+
+      <Select.Root
+        bind:selected={selectedProvider}
+        onSelectedChange={(selected) => {
+          selectedProvider = { value: selected?.value as string };
+          resetAndFetch();
+        }}
+      >
+        <Select.Trigger class="h-8 flex-1 min-w-[120px] px-3 py-1 text-sm">
+          <Select.Value placeholder="Provider" />
+        </Select.Trigger>
+        <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
+          <Select.Item value={'all'}>All Providers</Select.Item>
+          <Select.Separator class="border-t my-1" />
+          {#each providerOptions as prov}
+            <Select.Item value={prov.value}>{prov.label}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
+    </div>
+
+    <!-- List -->
+    <ul class="space-y-1.5">
+      {#each history as update, i (update.emote_id + update.provider + update.count)}
+        <li class="flex items-center gap-3 rounded-md border bg-card px-3 py-2">
+          <!-- rank -->
+          <span class="w-7 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{i + 1}</span>
+
+          <!-- provider logo (only when showing all providers) -->
+          {#if selectedProvider.value === 'all'}
+            <SkeletonImage
+              class="size-5 shrink-0 {update.provider === 'TWITCH' ? 'rounded-none' : 'rounded-full'}"
+              src={providers?.[update.provider]?.logo ?? `/dashboard/${update.provider.toLowerCase()}-logo.png`}
+              alt={providers?.[update.provider]?.name ?? update.provider}
+              title={providers?.[update.provider]?.name ?? update.provider}
+              href={providers?.[update.provider]?.home ?? '#'}
+            />
           {/if}
-        </ul>
-      </div>
-    </fieldset>
-  </form>
+
+          <!-- emote image -->
+          <div class="flex h-10 min-w-[40px] max-w-[80px] shrink-0 items-center justify-center overflow-hidden">
+            {#if update.provider !== 'EMOJI'}
+              <SkeletonImage
+                class="max-h-10 w-auto max-w-full"
+                src={update.url}
+                alt={update.emote_alias || update.emote_name}
+                title={update.emote_alias || update.emote_name}
+                href={update.url}
+              />
+            {:else}
+              <span style="font-size: 2rem; line-height:1;">{String.fromCodePoint(parseInt(update.emote_id, 16))}</span>
+            {/if}
+          </div>
+
+          <!-- name -->
+          <div class="flex min-w-0 flex-1 flex-col">
+            <span class="truncate font-medium">
+              {update.provider === 'EMOJI' ? update.emote_name : (update.emote_alias || update.emote_name)}
+            </span>
+            {#if update.emote_alias && update.emote_alias !== update.emote_name && update.provider !== 'EMOJI'}
+              <span class="truncate text-xs text-muted-foreground">{update.emote_name}</span>
+            {/if}
+          </div>
+
+          <!-- count -->
+          <div class="shrink-0 text-right">
+            <span class="font-bold tabular-nums">{parseInt(update.count).toLocaleString()}</span>
+            <span class="ml-1 text-xs text-muted-foreground">uses</span>
+          </div>
+        </li>
+      {/each}
+
+      {#if isLoading}
+        <!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+        {#each Array(loaded ? 5 : 10) as _, i (i)}
+          <li class="flex animate-pulse items-center gap-3 rounded-md border bg-card px-3 py-2">
+            <Skeleton class="h-5 w-7 rounded" />
+            <Skeleton class="size-10 rounded-full" />
+            <Skeleton class="h-10 w-10 rounded" />
+            <div class="flex flex-1 flex-col gap-1">
+              <Skeleton class="h-4 w-28 rounded" />
+            </div>
+            <Skeleton class="h-5 w-16 rounded" />
+          </li>
+        {/each}
+      {/if}
+    </ul>
+
+    <!-- sentinel for IntersectionObserver pagination -->
+    {#if loaded}
+      <div bind:this={sentinel} class="h-2"></div>
+      {#if !cursor && !isLoading && history.length > 0}
+        <p class="pt-1 text-center text-xs text-muted-foreground">All {history.length} emotes loaded.</p>
+      {/if}
+    {/if}
+  </fieldset>
 </div>
-
-<style scoped>
-  #container {
-    margin-top: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: left;
-    min-width: 400px;
-  }
-
-  .logo-container {
-    display: flex;
-    padding: 3px;
-    border-radius: 0.5rem;
-    background-color: hsl(var(--background));
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-    margin-right: 10px;
-    align-items: center;
-  }
-
-  .content-container {
-    display: flex;
-    padding: 3px;
-    border-radius: 0.5rem;
-    background-color: hsl(var(--background));
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-    align-items: center;
-    max-width: 700px;
-    width: 100%;
-    min-width: 200px;
-  }
-
-  .ago-container {
-    display: flex;
-    padding: 3px;
-    border-radius: 0.5rem;
-    background-color: hsl(var(--background));
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-    margin-left: 10px;
-    align-items: center;
-    text-align: center;
-    max-width: 135px;
-    width: 100%;
-  }
-
-  .emote-list {
-    list-style: none;
-    padding: 0;
-    overflow-y: auto;
-    word-break: break-word;
-  }
-
-  .emote-item {
-    display: flex;
-    box-sizing: border-box;
-    flex-wrap: nowrap;
-  }
-
-  .emote-item .text-content {
-    flex: 1;
-    word-wrap: break-word;
-  }
-
-  .emote-item .text-content {
-    vertical-align: middle;
-  }
-
-  .emote-list::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-  }
-
-  .emote-list::-webkit-scrollbar-thumb {
-    background: transparent;
-  }
-
-  .emote-image {
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
-  }
-</style>

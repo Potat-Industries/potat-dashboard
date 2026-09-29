@@ -26,6 +26,6 @@ export const userSettingDefaults: Setting[] = [
     id: 'ignore_dropped',
     value: false,
     type: 'boolean',
-    description: 'If enabled, the bot will not try a fallback whisper to you when a messsage fails to send.',
+        description: 'If enabled, the bot will not try a fallback whisper to you when a message fails to send.',
   },
 ];

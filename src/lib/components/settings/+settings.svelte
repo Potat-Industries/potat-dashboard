@@ -53,12 +53,16 @@
   let hasChanges = $derived(JSON.stringify(currentSettings) !== JSON.stringify(initialSettings));
 
   onMount(async () => {
-    const loadedSettings = await loadSettings();
     const defaultSettings = defaults.reduce((acc, setting) => {
       acc[setting.id] = setting.value;
       return acc;
     }, {} as Record<string, unknown>);
-    initialSettings = { ...defaultSettings, ...loadedSettings };
+    try {
+      const loadedSettings = await loadSettings();
+      initialSettings = { ...defaultSettings, ...loadedSettings };
+    } catch {
+      initialSettings = { ...defaultSettings };
+    }
     currentSettings = { ...initialSettings };
     console.log('Loaded settings:', currentSettings);
 
@@ -66,97 +70,88 @@
   });
 </script>
 
-<div class="flex justify-center">
-  <form class="w-full max-w-3xl" style="padding-left: 20px; padding-right: 20px;">
-    <fieldset class="space-y-8 rounded-lg border p-6" style="box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3)">
-      <legend class="px-2 text-lg font-semibold">{title}</legend>
+<div class="flex justify-center px-4">
+  <fieldset class="w-full max-w-3xl space-y-5 rounded-lg border p-6">
+    <legend class="px-2 text-lg font-semibold">{title}</legend>
 
       {#if !initialSettings}
-        <div class="flex justify-center">
-          <span class="loading loading-ring loading-sm"></span>
-          <p>Loading...</p>
+        <div class="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+          <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+          Loading settings…
         </div>
 
       {:else}
-        {#each defaults as config (config.id)}
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label for={config.id} class="text-base font-medium">
+        <!-- Input / select / number settings in a 2-column grid -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          {#each defaults.filter(c => c.type !== 'boolean') as config (config.id)}
+            <div class="grid gap-1.5">
+              <Label for={config.id} class="text-sm font-medium">
                 {config.id.split('_').join(' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase())}
               </Label>
-              <p class="text-sm text-muted-foreground">
-                {config.description}
-              </p>
-            </div>
+              <p class="text-xs text-muted-foreground">{config.description}</p>
 
-            {#if config.type === 'boolean'}
-              <div class="flex justify-start">
-                <Switch
-                  id={config.id}
-                  bind:checked={currentSettings[config.id] as boolean}
-                  on:click={() => handleUpdate(config.id, !currentSettings[config.id])}
-                />
-              </div>
-
-            {:else if config.type === 'choice' && config.possibleValues}
-              <div class="w-full max-w-xs">
+              {#if config.type === 'choice' && config.possibleValues}
                 <Select.Root
                   bind:selected={currentSettings[config.id] as Selected<unknown> | undefined}
                   on:onSelectedChange={(e) => handleUpdate(config.id, e.detail.selected)}
                 >
                   <Select.Trigger id={config.id} class="w-full">
-                    <Select.Value
-                      placeholder={`Select ${config.id.replace('_', ' ')}`}
-                    />
+                    <Select.Value placeholder={`Select ${config.id.replace('_', ' ')}`} />
                   </Select.Trigger>
-                  <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto border rounded-md shadow-lg">
+                  <Select.Content class="w-[var(--radix-select-trigger-width)] max-h-60 overflow-y-auto rounded-md border shadow-lg">
                     {#if config.defaults?.length}
                       {#each config.defaults as topLang}
                         <Select.Item value={topLang}>{topLang}</Select.Item>
                       {/each}
-
-                      <Select.Separator class="border-t my-1" />
+                      <Select.Separator class="my-1 border-t" />
                     {/if}
-
                     {#each config.possibleValues as value}
                       <Select.Item value={value}>{value}</Select.Item>
                     {/each}
                   </Select.Content>
                 </Select.Root>
-              </div>
 
-            {:else if config.type === 'number'}
-              <div class="w-full max-w-xs">
+              {:else if config.type === 'number'}
                 <input
                   type="number"
                   id={config.id}
-                  class="w-full rounded-md border bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary"
+                  class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   bind:value={currentSettings[config.id]}
-                  oninput={(e) => handleUpdate(
-                    config.id,
-                    (e.target as HTMLInputElement)?.value
-                  )}
+                  oninput={(e) => handleUpdate(config.id, (e.target as HTMLInputElement)?.value)}
                 />
-              </div>
 
-            {:else}
-              <div class="w-full max-w-xl">
+              {:else}
                 <input
                   type="text"
                   id={config.id}
-                  class="w-full rounded-md border bg-background px-4 py-2 text-sm focus:ring-2 focus:ring-primary"
+                  class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   bind:value={currentSettings[config.id]}
-                  oninput={(e) => handleUpdate(
-                    config.id,
-                    (e.target as HTMLInputElement)?.value
-                  )}
+                  oninput={(e) => handleUpdate(config.id, (e.target as HTMLInputElement)?.value)}
                 />
-              </div>
-            {/if}
-          </div>
-        {/each}
+              {/if}
+            </div>
+          {/each}
+        </div>
 
-        <div class="pt-6">
+        <div class="grid gap-2 sm:grid-cols-2">
+          {#each defaults.filter(c => c.type === 'boolean') as config (config.id)}
+            <div class="flex items-center justify-between rounded-md border px-3 py-2.5">
+              <div class="min-w-0 flex-1 pr-3">
+                <p class="text-sm font-medium leading-none">
+                  {config.id.split('_').join(' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase())}
+                </p>
+                <p class="mt-1 text-xs text-muted-foreground">{config.description}</p>
+              </div>
+              <Switch
+                id={config.id}
+                bind:checked={currentSettings[config.id] as boolean}
+                on:click={() => handleUpdate(config.id, !currentSettings[config.id])}
+              />
+            </div>
+          {/each}
+        </div>
+
+        <div class="pt-2">
           <Button
             on:click={saveChanges}
             class={getButtonClass()}
@@ -171,5 +166,4 @@
       {/if}
 
     </fieldset>
-  </form>
-</div>
+  </div>

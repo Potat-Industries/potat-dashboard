@@ -8,6 +8,7 @@ export default defineConfig({
 		port: 3000,
 		allowedHosts: [
 			'dev.potat.industries',
+			'localhost',
 		],
 	},
 });
